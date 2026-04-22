@@ -642,12 +642,21 @@
     flex-shrink: 0;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
+  .card-loading .lt-col { flex: 1; min-width: 0; }
   .card-loading .lt {
     font-size: 13.5px;
     color: var(--ink-soft);
     font-style: italic;
     font-family: "Fraunces", Georgia, serif;
   }
+  .card-loading .lt-meta {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .card-loading .stop-btn { flex-shrink: 0; }
 
   /* Four Horsemen card */
   .card-horsemen .horsemen-grid {
@@ -1927,7 +1936,21 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
   function renderLoadingCard(m) {
     const c = el("div", "card-loading");
     c.appendChild(el("div", "spinner"));
-    c.appendChild(el("div", "lt", m.loadingText || "Working on it…"));
+    const info = el("div", "lt-col");
+    info.appendChild(el("div", "lt", m.loadingText || "Working on it…"));
+    const meta = el("div", "lt-meta");
+    const tk = el("span", "token-count", "0 tokens");
+    const dot = el("span", null, " · ");
+    const elp = el("span", "elapsed", "0s");
+    meta.appendChild(tk);
+    meta.appendChild(dot);
+    meta.appendChild(elp);
+    info.appendChild(meta);
+    c.appendChild(info);
+    const stop = el("button", "card-copy-btn stop-btn", "Stop");
+    stop.type = "button";
+    stop.addEventListener("click", () => { if (artifactCancel) artifactCancel(); });
+    c.appendChild(stop);
     return c;
   }
 
@@ -2093,6 +2116,8 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
     return "[artifact]";
   }
 
+  let artifactCancel = null;
+
   async function runArtifactTool(tool, values) {
     if (state.generating) return;
     if (!state.engine) {
@@ -2101,7 +2126,6 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
       return;
     }
 
-    // Record the user request and a loading placeholder in state
     state.messages.push({ role: "user", content: `Run: ${tool.label}` });
     const loadingIdx = state.messages.push({
       role: "assistant",
@@ -2115,27 +2139,58 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
     state.generating = true;
     sendBtn.disabled = true;
 
+    let cancelled = false;
+    artifactCancel = () => {
+      cancelled = true;
+      try { state.engine?.interruptGenerate?.(); } catch (_) {}
+    };
+
+    // Find the most recent loading card to update live
+    const loadingCardEl = chatInner.querySelector(".card-loading:last-of-type");
+    const tkEl = loadingCardEl?.querySelector(".token-count");
+    const elpEl = loadingCardEl?.querySelector(".elapsed");
+    const startedAt = Date.now();
+    const ticker = setInterval(() => {
+      if (!elpEl) return;
+      const s = Math.floor((Date.now() - startedAt) / 1000);
+      elpEl.textContent = s >= 60 ? `${Math.floor(s/60)}m ${s%60}s` : `${s}s`;
+    }, 500);
+
     try {
       const sysMsg = buildSystemMessage();
       const userPrompt = tool.prompt(values) + "\n\n" + tool.jsonInstruction;
-      const baseOpts = {
+      const stream = await state.engine.chat.completions.create({
         messages: [sysMsg, { role: "user", content: userPrompt }],
-        stream: false,
-        temperature: 0.55,
-        max_tokens: 2048,
-      };
-      let completion;
-      try {
-        completion = await state.engine.chat.completions.create({
-          ...baseOpts,
-          response_format: { type: "json_object" },
-        });
-      } catch (_) {
-        completion = await state.engine.chat.completions.create(baseOpts);
+        stream: true,
+        temperature: 0.5,
+        max_tokens: 1400,
+      });
+
+      let acc = "";
+      let tokens = 0;
+      for await (const chunk of stream) {
+        if (cancelled) break;
+        const delta = chunk?.choices?.[0]?.delta?.content || "";
+        if (!delta) continue;
+        acc += delta;
+        tokens += 1;
+        if (tkEl && (tokens % 3 === 0)) tkEl.textContent = `${tokens} tokens`;
       }
-      const raw = completion?.choices?.[0]?.message?.content || "";
-      const data = parseJsonLoose(raw);
-      if (!data) throw new Error("I got a response but couldn't parse it as JSON. Try running the tool again.");
+      if (tkEl) tkEl.textContent = `${tokens} tokens`;
+
+      if (cancelled) {
+        state.messages[loadingIdx] = {
+          role: "assistant",
+          content: "*Stopped.* You can try again, switch to a smaller model, or pick a different tool.",
+        };
+        return;
+      }
+
+      const data = parseJsonLoose(acc);
+      if (!data) {
+        console.error("Could not parse artifact JSON. Raw output:", acc);
+        throw new Error("The model's response wasn't valid JSON. Try again — or switch to Llama 3.2 3B or 8B for more reliable structured output.");
+      }
 
       state.messages[loadingIdx] = {
         role: "assistant",
@@ -2150,6 +2205,8 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
         content: `*Something went wrong generating that.* ${err?.message || ""}`,
       };
     } finally {
+      clearInterval(ticker);
+      artifactCancel = null;
       state.generating = false;
       sendBtn.disabled = false;
       renderMessages();
