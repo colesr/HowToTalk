@@ -549,6 +549,309 @@
   }
   .welcome .toolkit-link:hover { color: var(--warm); border-bottom-color: var(--warm); }
 
+  /* Artifact cards — designed outputs that double as screenshot-worthy moments */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 24px 26px 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    max-width: 640px;
+    margin: 6px 0;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .card-title-wrap { flex: 1; min-width: 0; }
+  .card-eyebrow {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-deep);
+    margin-bottom: 6px;
+  }
+  .card-title {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin: 0;
+  }
+  .card-copy-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    font: inherit;
+    font-size: 11px;
+    padding: 4px 9px;
+    border-radius: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 120ms, border-color 120ms, background 120ms;
+  }
+  .card-copy-btn:hover { border-color: var(--accent); color: var(--accent-deep); background: #fff; }
+  .card-copy-btn.copied { color: var(--accent-deep); border-color: var(--accent); }
+  .card-summary {
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin: 0 0 18px;
+  }
+  .card-footer {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+    text-align: right;
+    font-family: "Fraunces", Georgia, serif;
+    font-style: italic;
+  }
+
+  /* Loading card */
+  .card-loading {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: 640px;
+    margin: 6px 0;
+  }
+  .card-loading .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--line);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .card-loading .lt {
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: "Fraunces", Georgia, serif;
+  }
+
+  /* Four Horsemen card */
+  .card-horsemen .horsemen-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 600px) {
+    .card-horsemen .horsemen-grid { grid-template-columns: 1fr; }
+  }
+  .horseman-tile {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+  .horseman-tile h5 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 14.5px;
+    margin: 0 0 8px;
+    color: var(--ink);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+  .severity {
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .severity.s0 { background: rgba(107,138,122,0.15); color: var(--accent-deep); }
+  .severity.s1 { background: rgba(217,161,127,0.22); color: #8a5a3a; }
+  .severity.s2 { background: rgba(197,123,90,0.22); color: #7a3e22; }
+  .severity.s3 { background: rgba(169,68,66,0.18); color: var(--error); }
+  .dots {
+    display: inline-flex;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .dots span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--line);
+  }
+  .dots.f0 span:nth-child(-n+0) { }
+  .dots.f1 span:nth-child(1) { background: #d9a17f; }
+  .dots.f2 span:nth-child(-n+2) { background: var(--warm); }
+  .dots.f3 span:nth-child(-n+3) { background: var(--error); }
+  .horseman-speaker {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+    letter-spacing: 0.03em;
+  }
+  .horseman-evidence { margin: 4px 0 8px; }
+  .horseman-evidence blockquote {
+    margin: 0 0 4px;
+    padding: 4px 10px;
+    border-left: 2px solid var(--accent);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .horseman-evidence .why {
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin: 2px 0 8px 12px;
+    line-height: 1.45;
+  }
+  .horseman-antidote {
+    margin-top: auto;
+    font-size: 12.5px;
+    color: var(--ink);
+    padding-top: 10px;
+    border-top: 1px dashed var(--line);
+    line-height: 1.5;
+  }
+  .horseman-antidote b {
+    color: var(--accent-deep);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .overall-health {
+    margin: 18px 0 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    text-align: center;
+    font-family: "Fraunces", Georgia, serif;
+    font-style: italic;
+  }
+  .overall-health.concerning { background: rgba(169,68,66,0.08); color: var(--error); }
+  .overall-health.mixed { background: rgba(197,123,90,0.1); color: #7a3e22; }
+  .overall-health.healthy { background: rgba(107,138,122,0.12); color: var(--accent-deep); }
+
+  /* Beneath card */
+  .card-beneath .layer {
+    padding: 14px 16px;
+    border-radius: 12px;
+  }
+  .card-beneath .surface {
+    background: var(--bg);
+    border: 1px solid var(--line);
+  }
+  .card-beneath .ll {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 8px;
+  }
+  .card-beneath .deep .ll { color: var(--accent-deep); }
+  .card-beneath .surface blockquote {
+    margin: 0;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 15.5px;
+    font-style: italic;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .card-beneath .arrow {
+    text-align: center;
+    color: var(--accent);
+    font-size: 18px;
+    line-height: 1;
+    margin: 10px 0;
+    letter-spacing: 0.5em;
+    padding-left: 0.5em;
+  }
+  .card-beneath .deep {
+    background: linear-gradient(180deg, rgba(107,138,122,0.06), rgba(107,138,122,0.13));
+    border: 1px solid rgba(107,138,122,0.28);
+  }
+  .card-beneath .deep .txt {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .beneath-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin: 18px 0 4px;
+  }
+  .beneath-tags .tg {
+    font-size: 12px;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .beneath-tags .tg b {
+    font-weight: 600;
+    color: var(--accent-deep);
+    margin-right: 4px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 10px;
+  }
+  .beneath-tags .chip {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .beneath-tags .chip.feel { background: rgba(197,123,90,0.18); color: #7a3e22; }
+  .beneath-tags .chip.need { background: rgba(107,138,122,0.18); color: var(--accent-deep); }
+  .beneath-respond {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(107,138,122,0.06);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .beneath-respond b {
+    color: var(--accent-deep);
+    font-weight: 600;
+    display: block;
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
   /* Typing indicator */
   .typing {
     display: inline-flex;
@@ -663,7 +966,7 @@
               Paste a conversation and I'll analyze the dynamic.
             </div>
           </div>
-          <a class="toolkit-link" id="welcomeToolkitLink">Or browse the full toolkit — 19 structured tools →</a>
+          <a class="toolkit-link" id="welcomeToolkitLink">Or browse the full toolkit — 21 structured tools →</a>
         </div>
       </div>
     </div>
@@ -789,6 +1092,78 @@ You are private — you run entirely in the user's browser. They can trust you w
   // Each tool: id, category, label, description, requiresContext, fields, prompt(values).
   // ————————————————————————————————————————————————
   const TOOLS = [
+    // ——— Featured — shareable insights ———
+    {
+      id: "four-horsemen",
+      category: "Featured — shareable insights",
+      label: "The Four Horsemen scan",
+      description: "Gottman's 4 predictors of breakdown, flagged with exact quoted evidence.",
+      requiresContext: true,
+      renderer: "fourHorsemen",
+      loadingText: "Scanning for criticism, contempt, defensiveness, and stonewalling…",
+      fields: [
+        { name: "focus", label: "Any specific stretch to focus on?", type: "text", placeholder: "e.g. the past week, our fight Saturday", optional: true },
+      ],
+      prompt: (v) => `Scan the conversation I've loaded in context for the Four Horsemen of the Apocalypse from Gottman's research: Criticism, Contempt, Defensiveness, and Stonewalling.${v.focus ? ` Focus especially on: ${v.focus}.` : ""}
+
+For each of the four: find the strongest 1-2 pieces of evidence (exact quoted lines from the conversation) if present, identify who is doing it, rate severity 0-3, and give the Gottman antidote phrased actionably and specifically to this situation.`,
+      jsonInstruction: `Respond ONLY with a single JSON object. No markdown fences, no prose outside the JSON. Use this exact schema:
+
+{
+  "summary": "1-2 sentence overall read of the conversation",
+  "findings": [
+    {
+      "horseman": "Criticism",
+      "severity": 0,
+      "severityLabel": "None",
+      "speaker": "none",
+      "evidence": [],
+      "antidote": "The Gottman antidote for this horseman, phrased as an actionable sentence specific to the situation."
+    },
+    { "horseman": "Contempt", "severity": 0, "severityLabel": "None", "speaker": "none", "evidence": [], "antidote": "..." },
+    { "horseman": "Defensiveness", "severity": 0, "severityLabel": "None", "speaker": "none", "evidence": [], "antidote": "..." },
+    { "horseman": "Stonewalling", "severity": 0, "severityLabel": "None", "speaker": "none", "evidence": [], "antidote": "..." }
+  ],
+  "overallHealth": "healthy"
+}
+
+Rules:
+- Severity: 0 = not present, 1 = mild, 2 = moderate, 3 = severe. severityLabel must match: "None" | "Mild" | "Moderate" | "Severe".
+- speaker: "you" | "them" | "both" | "none". Use "none" only when severity is 0.
+- evidence items: { "quote": "verbatim quoted line from the conversation", "why": "one-sentence reason this qualifies" }. 1-2 evidence items max. Empty array if severity is 0.
+- All four horsemen must appear in order: Criticism, Contempt, Defensiveness, Stonewalling.
+- overallHealth: "concerning" | "mixed" | "healthy".`,
+    },
+    {
+      id: "beneath",
+      category: "Featured — shareable insights",
+      label: "The sentence behind the sentence",
+      description: "Take something they said and reveal the unspoken need underneath.",
+      requiresContext: false,
+      renderer: "beneath",
+      loadingText: "Reading between the lines…",
+      fields: [
+        { name: "said", label: "What did they say?", type: "textarea", placeholder: "Paste the exact message. A line or a paragraph.", optional: false },
+        { name: "context", label: "Anything I should know about the context?", type: "text", placeholder: "e.g. after a long silence, during a fight, out of nowhere", optional: true },
+      ],
+      prompt: (v) => `Someone said this to me:
+
+"${v.said}"
+${v.context ? `\nContext: ${v.context}\n` : ""}
+Translate it. What is the unspoken version of what they're really saying? What feelings and unmet needs might be beneath it?
+
+Be humble about uncertainty — this is a likely read, not a definitive one — but commit to a real, specific interpretation rather than hedging into uselessness. Write the "beneath" version in warm plain prose, in first person, as if they were saying it directly.`,
+      jsonInstruction: `Respond ONLY with a single JSON object. No markdown fences, no prose outside the JSON. Use this exact schema:
+
+{
+  "surface": "the literal thing they said, verbatim",
+  "beneath": "the unspoken version in warm plain prose, 1-2 sentences, in first person as if they were saying it directly",
+  "feelings": ["1-3 likely feelings, single words"],
+  "needs": ["1-3 likely unmet needs, single words or short phrases"],
+  "howToRespond": "one short sentence on a way to respond to what's beneath, not the surface"
+}`,
+    },
+
     // ——— Analyze a thread ———
     {
       id: "reciprocity",
@@ -1335,7 +1710,15 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
       return;
     }
     for (const m of state.messages) {
-      chatInner.appendChild(renderMsg(m.role, m.content));
+      if (m.type === "artifact-loading") {
+        chatInner.appendChild(renderLoadingCard(m));
+      } else if (m.type === "artifact") {
+        const renderer = ARTIFACT_RENDERERS[m.artifactType];
+        if (renderer) chatInner.appendChild(renderer(m.data));
+        else chatInner.appendChild(renderMsg("assistant", "[unrenderable artifact]"));
+      } else {
+        chatInner.appendChild(renderMsg(m.role, m.content));
+      }
     }
   }
   function renderMsg(role, content) {
@@ -1450,7 +1833,15 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
     sendBtn.disabled = true;
 
     try {
-      const msgs = [buildSystemMessage(), ...state.messages.slice(0, -1)]; // exclude empty assistant placeholder
+      const msgs = [buildSystemMessage()];
+      for (const m of state.messages.slice(0, -1)) {
+        if (m.type === "artifact-loading") continue;
+        if (m.type === "artifact") {
+          msgs.push({ role: "assistant", content: summarizeArtifactForHistory(m) });
+        } else {
+          msgs.push({ role: m.role, content: m.content });
+        }
+      }
       const stream = await state.engine.chat.completions.create({
         messages: msgs,
         stream: true,
@@ -1481,6 +1872,288 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
       state.generating = false;
       sendBtn.disabled = false;
       input.focus();
+    }
+  }
+
+  // —————————————————————————————— Artifact rendering (designed output cards)
+  function parseJsonLoose(raw) {
+    if (!raw) return null;
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```\s*$/i, "").trim();
+    try { return JSON.parse(cleaned); } catch (_) {}
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start >= 0 && end > start) {
+      try { return JSON.parse(cleaned.slice(start, end + 1)); } catch (_) {}
+    }
+    return null;
+  }
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  async function copyText(text, btn) {
+    try {
+      await navigator.clipboard.writeText(text);
+      if (btn) {
+        const orig = btn.textContent;
+        btn.textContent = "Copied";
+        btn.classList.add("copied");
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove("copied"); }, 1500);
+      }
+    } catch (_) {}
+  }
+
+  function cardHeader(eyebrow, title, copyText) {
+    const h = el("div", "card-header");
+    const tw = el("div", "card-title-wrap");
+    tw.appendChild(el("div", "card-eyebrow", eyebrow));
+    tw.appendChild(el("h3", "card-title", title));
+    const btn = el("button", "card-copy-btn", "Copy");
+    btn.type = "button";
+    btn.addEventListener("click", () => copyText(btn));
+    h.appendChild(tw);
+    h.appendChild(btn);
+    return { header: h, copyBtn: btn };
+  }
+
+  function cardFooter() {
+    return el("div", "card-footer", "— Communication Enhancement Suite");
+  }
+
+  function renderLoadingCard(m) {
+    const c = el("div", "card-loading");
+    c.appendChild(el("div", "spinner"));
+    c.appendChild(el("div", "lt", m.loadingText || "Working on it…"));
+    return c;
+  }
+
+  // —— Four Horsemen renderer ——
+  function renderFourHorsemenCard(data) {
+    const card = el("div", "card card-horsemen");
+    const title = "The Four Horsemen";
+    const copyPayload = () => {
+      const lines = [
+        title + " — Gottman scan",
+        "",
+        data.summary || "",
+        "",
+      ];
+      for (const f of (data.findings || [])) {
+        lines.push(`${f.horseman} — ${f.severityLabel || ""}${f.speaker && f.speaker !== "none" ? ` (${f.speaker})` : ""}`);
+        for (const ev of (f.evidence || [])) lines.push(`  "${ev.quote}" — ${ev.why}`);
+        if (f.antidote) lines.push(`  Antidote: ${f.antidote}`);
+        lines.push("");
+      }
+      if (data.overallHealth) lines.push(`Overall: ${data.overallHealth}`);
+      lines.push("— Communication Enhancement Suite");
+      return lines.join("\n");
+    };
+    const { header } = cardHeader("Gottman Institute research · scan of your thread", title, (btn) => copyText(copyPayload(), btn));
+    card.appendChild(header);
+    if (data.summary) card.appendChild(el("p", "card-summary", data.summary));
+
+    const grid = el("div", "horsemen-grid");
+    const order = ["Criticism", "Contempt", "Defensiveness", "Stonewalling"];
+    const findingsByName = {};
+    for (const f of (data.findings || [])) findingsByName[f.horseman] = f;
+    for (const name of order) {
+      const f = findingsByName[name] || { horseman: name, severity: 0, severityLabel: "None", speaker: "none", evidence: [], antidote: "" };
+      const sev = Math.max(0, Math.min(3, Number(f.severity) || 0));
+      const tile = el("div", "horseman-tile");
+      const h5 = el("h5");
+      h5.appendChild(el("span", null, f.horseman));
+      const sevPill = el("span", `severity s${sev}`, (f.severityLabel || ["None","Mild","Moderate","Severe"][sev]));
+      h5.appendChild(sevPill);
+      tile.appendChild(h5);
+
+      const dots = el("div", `dots f${sev}`);
+      for (let i = 0; i < 3; i++) dots.appendChild(el("span"));
+      tile.appendChild(dots);
+
+      if (f.speaker && f.speaker !== "none") {
+        const who = f.speaker === "you" ? "Mostly you" : f.speaker === "them" ? "Mostly them" : "Both of you";
+        tile.appendChild(el("div", "horseman-speaker", who));
+      }
+
+      if (f.evidence && f.evidence.length) {
+        const ev = el("div", "horseman-evidence");
+        for (const e of f.evidence) {
+          const bq = el("blockquote", null, `"${e.quote}"`);
+          ev.appendChild(bq);
+          if (e.why) ev.appendChild(el("div", "why", e.why));
+        }
+        tile.appendChild(ev);
+      }
+
+      if (f.antidote) {
+        const a = el("div", "horseman-antidote");
+        a.appendChild(el("b", null, "Antidote"));
+        a.appendChild(document.createTextNode(f.antidote));
+        tile.appendChild(a);
+      }
+
+      grid.appendChild(tile);
+    }
+    card.appendChild(grid);
+
+    if (data.overallHealth) {
+      const h = String(data.overallHealth).toLowerCase();
+      const label = { concerning: "Overall dynamic: concerning", mixed: "Overall dynamic: mixed — real warmth alongside real friction", healthy: "Overall dynamic: healthy — worth protecting" }[h] || `Overall: ${data.overallHealth}`;
+      const oh = el("div", `overall-health ${h}`, label);
+      card.appendChild(oh);
+    }
+
+    card.appendChild(cardFooter());
+    return card;
+  }
+
+  // —— Beneath the sentence renderer ——
+  function renderBeneathCard(data) {
+    const card = el("div", "card card-beneath");
+    const title = "The sentence behind the sentence";
+    const copyPayload = () => {
+      const lines = [
+        title,
+        "",
+        `What they said:`,
+        `"${data.surface || ""}"`,
+        "",
+        `What might be beneath:`,
+        data.beneath || "",
+        "",
+      ];
+      if (data.feelings?.length) lines.push(`Feelings: ${data.feelings.join(" · ")}`);
+      if (data.needs?.length) lines.push(`Needs: ${data.needs.join(" · ")}`);
+      if (data.howToRespond) lines.push(`\nOne way to respond: ${data.howToRespond}`);
+      lines.push("", "— Communication Enhancement Suite");
+      return lines.join("\n");
+    };
+    const { header } = cardHeader("A translation", title, (btn) => copyText(copyPayload(), btn));
+    card.appendChild(header);
+
+    const surface = el("div", "layer surface");
+    surface.appendChild(el("div", "ll", "What they said"));
+    const sq = el("blockquote", null, `"${data.surface || ""}"`);
+    surface.appendChild(sq);
+    card.appendChild(surface);
+
+    card.appendChild(el("div", "arrow", "· · ·"));
+
+    const deep = el("div", "layer deep");
+    deep.appendChild(el("div", "ll", "What might be beneath"));
+    deep.appendChild(el("div", "txt", data.beneath || ""));
+    card.appendChild(deep);
+
+    if ((data.feelings && data.feelings.length) || (data.needs && data.needs.length)) {
+      const tags = el("div", "beneath-tags");
+      if (data.feelings?.length) {
+        const tg = el("div", "tg");
+        tg.appendChild(el("b", null, "Feelings"));
+        for (const f of data.feelings) tg.appendChild(el("span", "chip feel", f));
+        tags.appendChild(tg);
+      }
+      if (data.needs?.length) {
+        const tg = el("div", "tg");
+        tg.appendChild(el("b", null, "Needs"));
+        for (const n of data.needs) tg.appendChild(el("span", "chip need", n));
+        tags.appendChild(tg);
+      }
+      card.appendChild(tags);
+    }
+
+    if (data.howToRespond) {
+      const r = el("div", "beneath-respond");
+      r.appendChild(el("b", null, "One way to respond"));
+      r.appendChild(document.createTextNode(data.howToRespond));
+      card.appendChild(r);
+    }
+
+    card.appendChild(cardFooter());
+    return card;
+  }
+
+  const ARTIFACT_RENDERERS = {
+    "four-horsemen": renderFourHorsemenCard,
+    "beneath": renderBeneathCard,
+  };
+
+  function summarizeArtifactForHistory(m) {
+    if (!m.data) return "[artifact]";
+    if (m.artifactType === "four-horsemen") {
+      const sev = (m.data.findings || []).map(f => `${f.horseman}: ${f.severityLabel || f.severity}`).join(", ");
+      return `[Four Horsemen scan] ${m.data.summary || ""} Severities — ${sev}. Overall: ${m.data.overallHealth || "n/a"}.`;
+    }
+    if (m.artifactType === "beneath") {
+      return `[Translation] Surface: "${m.data.surface || ""}" → Beneath: "${m.data.beneath || ""}". Feelings: ${(m.data.feelings || []).join(", ")}. Needs: ${(m.data.needs || []).join(", ")}.`;
+    }
+    return "[artifact]";
+  }
+
+  async function runArtifactTool(tool, values) {
+    if (state.generating) return;
+    if (!state.engine) {
+      triggerFirstLoad();
+      setStatus("loading", "Model is still loading — give it a moment.");
+      return;
+    }
+
+    // Record the user request and a loading placeholder in state
+    state.messages.push({ role: "user", content: `Run: ${tool.label}` });
+    const loadingIdx = state.messages.push({
+      role: "assistant",
+      type: "artifact-loading",
+      loadingText: tool.loadingText || "Working on it…",
+    }) - 1;
+
+    renderMessages();
+    scrollBottom();
+
+    state.generating = true;
+    sendBtn.disabled = true;
+
+    try {
+      const sysMsg = buildSystemMessage();
+      const userPrompt = tool.prompt(values) + "\n\n" + tool.jsonInstruction;
+      const baseOpts = {
+        messages: [sysMsg, { role: "user", content: userPrompt }],
+        stream: false,
+        temperature: 0.55,
+        max_tokens: 2048,
+      };
+      let completion;
+      try {
+        completion = await state.engine.chat.completions.create({
+          ...baseOpts,
+          response_format: { type: "json_object" },
+        });
+      } catch (_) {
+        completion = await state.engine.chat.completions.create(baseOpts);
+      }
+      const raw = completion?.choices?.[0]?.message?.content || "";
+      const data = parseJsonLoose(raw);
+      if (!data) throw new Error("I got a response but couldn't parse it as JSON. Try running the tool again.");
+
+      state.messages[loadingIdx] = {
+        role: "assistant",
+        type: "artifact",
+        artifactType: tool.id,
+        data,
+      };
+    } catch (err) {
+      console.error(err);
+      state.messages[loadingIdx] = {
+        role: "assistant",
+        content: `*Something went wrong generating that.* ${err?.message || ""}`,
+      };
+    } finally {
+      state.generating = false;
+      sendBtn.disabled = false;
+      renderMessages();
+      scrollBottom();
     }
   }
 
@@ -1609,6 +2282,14 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
       setTimeout(() => { missingRequired.style.borderColor = ""; }, 1600);
       return;
     }
+    if (currentTool.renderer) {
+      const tool = currentTool;
+      closeToolForm();
+      triggerFirstLoad();
+      runArtifactTool(tool, values);
+      return;
+    }
+
     const prompt = currentTool.prompt(values);
     input.value = prompt;
     input.dispatchEvent(new Event("input"));
