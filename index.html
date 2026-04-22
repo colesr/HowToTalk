@@ -669,6 +669,238 @@
   .council-speaking span:nth-child(2) { animation-delay: 0.15s; }
   .council-speaking span:nth-child(3) { animation-delay: 0.3s; }
 
+  /* Mentions */
+  .mention {
+    display: inline;
+    background: color-mix(in srgb, var(--member-color, var(--accent)) 18%, transparent);
+    color: var(--member-color, var(--accent-deep));
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 0.92em;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+  }
+
+  /* Nested comments */
+  .council-thread { display: flex; flex-direction: column; }
+  .comments-container {
+    margin-left: 46px;
+    padding-left: 14px;
+    border-left: 2px dashed var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+    margin-bottom: 2px;
+  }
+  .council-msg.is-comment {
+    grid-template-columns: 26px 1fr;
+    gap: 10px;
+  }
+  .council-msg.is-comment .mono {
+    width: 26px; height: 26px; font-size: 10.5px;
+  }
+  .council-msg.is-comment .council-head .name { font-size: 12.5px; }
+  .council-msg.is-comment .council-head .role { font-size: 10px; }
+  .council-msg.is-comment .council-bubble {
+    padding: 8px 12px;
+    font-size: 13.5px;
+    line-height: 1.55;
+  }
+
+  /* Reactions row + reply button */
+  .reactions {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+  }
+  .react-btn, .reply-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 3px 9px;
+    border-radius: 14px;
+    font: inherit;
+    font-size: 11.5px;
+    cursor: pointer;
+    color: var(--ink-faint);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 120ms, color 120ms, border-color 120ms;
+    line-height: 1.2;
+  }
+  .react-btn:hover, .reply-btn:hover {
+    background: var(--bg);
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  .react-btn .icon { font-size: 13px; line-height: 1; display: inline-block; }
+  .react-btn .count { font-variant-numeric: tabular-nums; min-width: 0; }
+  .react-btn .count:empty { display: none; }
+  .react-btn.heart.active {
+    color: #c44a5e;
+    background: rgba(196,74,94,0.09);
+    border-color: rgba(196,74,94,0.25);
+  }
+  .react-btn.lol.active {
+    color: #c58940;
+    background: rgba(197,137,64,0.1);
+    border-color: rgba(197,137,64,0.28);
+  }
+  .react-btn.pop .icon {
+    animation: react-pop 420ms cubic-bezier(.2,1.2,.3,1);
+  }
+  @keyframes react-pop {
+    0%   { transform: scale(1) rotate(0); }
+    30%  { transform: scale(1.75) rotate(-10deg); }
+    55%  { transform: scale(1.15) rotate(8deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .react-btn.bot-bump {
+    animation: react-bot-bump 650ms ease;
+  }
+  @keyframes react-bot-bump {
+    0%   { background: color-mix(in srgb, currentColor 16%, transparent); transform: scale(1.1); }
+    100% { background: transparent; transform: scale(1); }
+  }
+  .reply-btn::before {
+    content: "↩";
+    margin-right: 2px;
+    opacity: 0.7;
+    font-size: 12px;
+  }
+
+  /* Inline reply composer */
+  .inline-reply {
+    margin-top: 6px;
+    padding: 10px 12px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .inline-reply textarea {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 13.5px;
+    line-height: 1.5;
+    resize: none;
+    min-height: 24px;
+    max-height: 120px;
+    color: var(--ink);
+  }
+  .inline-reply textarea::placeholder { color: var(--ink-faint); }
+  .inline-reply-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 6px;
+  }
+  .inline-reply-actions .hint {
+    flex: 1;
+    font-size: 10.5px;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+  }
+  .inline-reply-actions .btn {
+    font-size: 11.5px;
+    padding: 5px 11px;
+  }
+
+  /* Mention autocomplete */
+  .mention-autocomplete {
+    position: absolute;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px -10px rgba(42,39,36,0.3);
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 40;
+  }
+  .mention-autocomplete button {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 6px 8px;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    border-radius: 6px;
+  }
+  .mention-autocomplete button:hover,
+  .mention-autocomplete button.active {
+    background: var(--bg);
+  }
+  .mention-autocomplete button .mono {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: var(--member-color);
+    color: #fff;
+    display: grid; place-items: center;
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 10.5px;
+  }
+  .mention-autocomplete button .m-name {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .mention-autocomplete button .m-title {
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    line-height: 1.3;
+    margin-top: 1px;
+  }
+
+  /* "X is thinking…" row */
+  .thinking-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 2px;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    font-style: italic;
+    font-family: "Fraunces", Georgia, serif;
+  }
+  .thinking-row .mono {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--member-color, var(--accent));
+    color: #fff;
+    display: grid; place-items: center;
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 9.5px;
+  }
+  .thinking-row .dots {
+    display: inline-flex; gap: 3px; margin-left: 2px;
+  }
+  .thinking-row .dots span {
+    width: 4px; height: 4px; border-radius: 50%;
+    background: var(--member-color, var(--ink-faint));
+    animation: typing 1.2s infinite;
+  }
+  .thinking-row .dots span:nth-child(2) { animation-delay: 0.15s; }
+  .thinking-row .dots span:nth-child(3) { animation-delay: 0.3s; }
+
   @media (max-width: 900px) {
     .boardroom { grid-template-columns: 1fr; }
     .roster {
@@ -2714,9 +2946,87 @@ What you bring to the council: the translation layer between different cognitive
   // Add council state
   state.council = {
     members: [],
-    messages: [],
+    messages: [], // flat array; nesting via parentId
     cancel: null,
+    stopRequested: false,
+    replyTo: null,  // message id user is replying to (inline), if any
   };
+
+  // Message ID generator
+  let _nextMsgId = 1;
+  function newMessageId() { return "m" + (_nextMsgId++); }
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+  function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c])); }
+
+  // Parse @mentions against member list — first names, or full name.
+  function parseMentions(text, members) {
+    if (!text) return { mentionIds: [] };
+    const found = new Set();
+    // Sort members by name length desc so full names match before first names
+    const sorted = [...members].sort((a, b) => b.name.length - a.name.length);
+    for (const m of sorted) {
+      const first = m.name.split(/\s+/)[0];
+      const patterns = [m.name, first];
+      for (const p of patterns) {
+        const re = new RegExp(`@${p.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+        if (re.test(text)) { found.add(m.id); break; }
+      }
+    }
+    return { mentionIds: [...found] };
+  }
+
+  // Render content with markdown-ish + mention chips.
+  function renderContent(text, members) {
+    let html = markdownish(text || "");
+    // Substitute @mentions (longer names first to avoid partial matches)
+    const sorted = [...members].sort((a, b) => b.name.length - a.name.length);
+    for (const m of sorted) {
+      const first = escapeHtml(m.name.split(/\s+/)[0]);
+      const full = escapeHtml(m.name);
+      // Full name first
+      const fullRe = new RegExp(`@${full.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi");
+      html = html.replace(fullRe, `<span class="mention" style="--member-color:${m.color}">@${full}</span>`);
+      const firstRe = new RegExp(`(^|[^\\w])@${first.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi");
+      html = html.replace(firstRe, (match, pre) => `${pre}<span class="mention" style="--member-color:${m.color}">@${first}</span>`);
+    }
+    return html;
+  }
+
+  // Bot reactions: probabilistic hearts/lols from non-authors with humor/warmth bias.
+  function addBotReactions(msg) {
+    if (!msg || msg.role !== "member") return;
+    const others = state.council.members.filter(m => m.active && m.id !== msg.memberId);
+    const lower = (msg.content || "").toLowerCase();
+    const humorHints = /(ha ha|haha|lol|joking|kidding|funny|ridiculous|😂|😅|😆|😭|😂|🤣|\bamusing\b)/i.test(lower);
+    const warmthHints = /(love|beautiful|honor|honest|brave|proud of you|i hear you|thank you|appreciate|i'm with you|same here)/i.test(lower);
+    const questionHints = /\?/.test(lower);
+    for (const m of others) {
+      const rHeart = warmthHints ? 0.42 : (questionHints ? 0.22 : 0.18);
+      const rLol   = humorHints ? 0.55 : 0.08;
+      if (Math.random() < rHeart && !msg.reactions.heart.includes(m.id)) {
+        msg.reactions.heart.push(m.id);
+      } else if (Math.random() < rLol && !msg.reactions.lol.includes(m.id)) {
+        msg.reactions.lol.push(m.id);
+      }
+    }
+  }
+
+  // Pick 1-3 initial speakers when no @mention is given.
+  function pickInitialSpeakers(active, prior) {
+    const lastSpokeIdx = {};
+    for (let i = prior.length - 1; i >= 0; i--) {
+      const m = prior[i];
+      if (m.role === "member" && !(m.memberId in lastSpokeIdx)) lastSpokeIdx[m.memberId] = i;
+    }
+    const weighted = active.map(m => ({
+      m,
+      weight: (prior.length - (lastSpokeIdx[m.id] ?? -50)) + Math.random() * 6,
+    }));
+    weighted.sort((a, b) => b.weight - a.weight);
+    const r = Math.random();
+    const count = r < 0.5 ? 1 : (r < 0.85 ? 2 : 3);
+    return weighted.slice(0, Math.min(count, weighted.length)).map(x => x.m);
+  }
 
   // DOM refs
   const boardroomSection = $("boardroomSection");
@@ -2878,19 +3188,36 @@ What you bring to the council: the translation layer between different cognitive
     if (!state.council.messages.length) {
       const tip = el("div", "council-empty");
       const h = el("h3", null, "The room is seated.");
-      const p = el("p", null, "Tell your council what's on your mind. Each active member will respond in turn, one after another.");
+      const p = el("p", null, "Tell your council what's on your mind. Type @ to address a specific member — otherwise the room decides who weighs in, and members can respond to each other.");
       tip.appendChild(h);
       tip.appendChild(p);
       councilInner.appendChild(tip);
       return;
     }
+    const topLevel = state.council.messages.filter(m => !m.parentId);
+    const childrenOf = {};
     for (const m of state.council.messages) {
-      councilInner.appendChild(renderCouncilMsg(m));
+      if (m.parentId) {
+        if (!childrenOf[m.parentId]) childrenOf[m.parentId] = [];
+        childrenOf[m.parentId].push(m);
+      }
+    }
+    for (const m of topLevel) {
+      const thread = el("div", "council-thread");
+      thread.appendChild(renderCouncilMsg(m, false));
+      const kids = childrenOf[m.id] || [];
+      if (kids.length) {
+        const container = el("div", "comments-container");
+        for (const c of kids) container.appendChild(renderCouncilMsg(c, true));
+        thread.appendChild(container);
+      }
+      councilInner.appendChild(thread);
     }
   }
 
-  function renderCouncilMsg(m) {
-    const wrap = el("div", "council-msg " + (m.role === "user" ? "user" : "member"));
+  function renderCouncilMsg(m, isComment) {
+    const wrap = el("div", `council-msg ${m.role === "user" ? "user" : "member"}${isComment ? " is-comment" : ""}`);
+    wrap.dataset.mid = m.id;
     const mono = el("div", "mono", m.role === "user" ? "You" : (m.mono || monoOf(m.name || "?")));
     if (m.color) wrap.style.setProperty("--member-color", m.color);
     const body = el("div", "council-body");
@@ -2901,50 +3228,138 @@ What you bring to the council: the translation layer between different cognitive
       body.appendChild(head);
     }
     const bubble = el("div", "council-bubble");
-    bubble.innerHTML = m.content ? markdownish(m.content) : `<span class="council-speaking"><span></span><span></span><span></span></span>`;
+    bubble.innerHTML = m.content
+      ? renderContent(m.content, state.council.members)
+      : `<span class="council-speaking"><span></span><span></span><span></span></span>`;
     body.appendChild(bubble);
+    if (m.content) body.appendChild(renderReactionsRow(m));
     wrap.appendChild(mono);
     wrap.appendChild(body);
     return wrap;
+  }
+
+  function renderReactionsRow(m) {
+    const row = el("div", "reactions");
+    row.dataset.mid = m.id;
+    const hearts = m.reactions?.heart?.length || 0;
+    const lols = m.reactions?.lol?.length || 0;
+    const userHeart = !!m.reactions?.heart?.includes("user");
+    const userLol = !!m.reactions?.lol?.includes("user");
+
+    const heartBtn = el("button", "react-btn heart" + (userHeart ? " active" : ""));
+    heartBtn.type = "button";
+    heartBtn.dataset.mid = m.id;
+    heartBtn.dataset.type = "heart";
+    heartBtn.setAttribute("aria-label", "Love");
+    heartBtn.appendChild(el("span", "icon", "♥"));
+    heartBtn.appendChild(el("span", "count", hearts ? String(hearts) : ""));
+    if (hearts) heartBtn.title = reactionTooltip(m.reactions.heart);
+
+    const lolBtn = el("button", "react-btn lol" + (userLol ? " active" : ""));
+    lolBtn.type = "button";
+    lolBtn.dataset.mid = m.id;
+    lolBtn.dataset.type = "lol";
+    lolBtn.setAttribute("aria-label", "Laugh");
+    lolBtn.appendChild(el("span", "icon", "😂"));
+    lolBtn.appendChild(el("span", "count", lols ? String(lols) : ""));
+    if (lols) lolBtn.title = reactionTooltip(m.reactions.lol);
+
+    const replyBtn = el("button", "reply-btn", "Reply");
+    replyBtn.type = "button";
+    replyBtn.dataset.mid = m.id;
+    replyBtn.dataset.action = "reply";
+
+    row.appendChild(heartBtn);
+    row.appendChild(lolBtn);
+    row.appendChild(replyBtn);
+    return row;
+  }
+
+  function reactionTooltip(actors) {
+    if (!actors?.length) return "";
+    return actors.map(id => {
+      if (id === "user") return "You";
+      const mm = state.council.members.find(x => x.id === id);
+      return mm ? mm.name : "Someone";
+    }).join(", ");
+  }
+
+  function renderThinkingRow(speaker) {
+    const row = el("div", "thinking-row");
+    row.style.setProperty("--member-color", speaker.color);
+    row.dataset.thinking = speaker.id;
+    row.appendChild(el("div", "mono", speaker.mono));
+    row.appendChild(el("span", null, `${speaker.name} is thinking`));
+    const dots = el("span", "dots");
+    for (let i = 0; i < 3; i++) dots.appendChild(el("span"));
+    row.appendChild(dots);
+    return row;
+  }
+
+  function findThreadByMid(mid) {
+    const msgEl = councilInner.querySelector(`.council-msg[data-mid="${mid}"]`);
+    if (!msgEl) return null;
+    let p = msgEl.parentElement;
+    while (p && !p.classList.contains("council-thread")) p = p.parentElement;
+    return p;
   }
 
   function scrollCouncilBottom() {
     councilTranscript.scrollTop = councilTranscript.scrollHeight;
   }
 
-  function buildCouncilMessages(speaker, priorMessages) {
-    const others = state.council.members
-      .filter(m => m.id !== speaker.id && m.active)
-      .map(m => `${m.name} (${m.title})`)
-      .join(", ");
+  function buildCouncilMessages(speaker, members, allMsgs, isComment, parentMsgId) {
+    const others = members.filter(m => m.id !== speaker.id && m.active)
+      .map(m => `- ${m.name} (address them as "@${m.name.split(/\s+/)[0]}") — ${m.title}`)
+      .join("\n");
+
     let sys = `${speaker.prompt}
 
-You are participating in the user's AI Council Boardroom — a live session where several expert voices help the user think through something. Other council members currently seated: ${others || "(you are the only one speaking this round)"}.
+You are in the user's AI Council Boardroom — a live group meeting where several expert voices talk with the user and with each other. Other members currently seated:
+${others || "(you are the only active member right now)"}
 
-Rules of engagement:
-- Speak from your specific expertise and perspective. Bring what only you would bring.
-- Don't echo or restate what another member already said — build on it, or offer a different angle.
-- Keep your turn conversational and focused: usually 2–5 sentences. A short paragraph if genuinely needed.
-- Address the user directly ("you"). Don't narrate the room or describe what others said.
-- Stay in character, but don't perform. Be the real version of yourself.
-- Never speak for another council member or pretend to be one.
-- If another member just asked you a question directly, answer it.`;
+How to participate naturally:
+- Ask real questions — of the user, or of another member — when a question would be more useful than a statement. "What do you think is actually at stake for you here?" often beats a mini-lecture.
+- Share brief personal anecdotes from your expertise when they fit. One or two sentences. Relatable, not grandstanding.
+- React to what the user and other members just said. You can agree, gently challenge, build on it, or ask them to say more.
+- @mention another member by first name (e.g. "@Mira", "@Marcus") when you want them to weigh in on something specific. They will see it and respond.
+- If you have nothing useful to add right now, briefly say so and pass. "I'd rather hear from @Priya on this one" is completely fine.
+- Be a human in a room, not an encyclopedia. Sometimes warm, sometimes funny, sometimes quiet.
+- Keep your turn short and conversational — usually 2–4 sentences. A single good question is often enough.
+- No markdown lists, no headers, no bold. This is spoken conversation in text.
+- Don't speak for other members. Don't narrate the room. Don't describe what someone else is thinking or about to say.
+- Only say things YOU would say, from your own perspective. Never play someone else.
+- If the user has @mentioned you specifically, take that as an invitation to engage with what they asked.`;
 
     if (state.contextText) {
       const who = state.relLabel ? ` (with ${state.relLabel})` : "";
-      sys += `\n\nFor reference, the user has also loaded this conversation history${who}:\n\n"""\n${state.contextText}\n"""`;
+      sys += `\n\nFor reference, the user has loaded this conversation history${who}:\n\n"""\n${state.contextText}\n"""`;
     }
 
-    const transcript = priorMessages.map(m => {
-      if (m.role === "user") return `User: ${m.content}`;
-      return `${m.name} (${m.memberTitle || ""}): ${m.content}`;
+    const transcript = allMsgs.map(m => {
+      const indent = m.parentId ? "    (comment) " : "";
+      if (m.role === "user") return `${indent}User: ${m.content}`;
+      return `${indent}${m.name}: ${m.content}`;
     }).join("\n\n");
 
-    const userTurn = `Council transcript so far:
+    let userTurn;
+    if (isComment) {
+      const parent = allMsgs.find(m => m.id === parentMsgId);
+      const parentLabel = parent?.role === "user" ? "the user" : (parent?.name || "someone");
+      userTurn = `Meeting transcript so far:
 
 ${transcript}
 
-Now, as ${speaker.name}, what's your contribution? Speak once, then stop.`;
+You're adding a short comment in response to something ${parentLabel} just said. 1–2 sentences is ideal. It could be a question, a brief agreement or gentle challenge, a small anecdote, or a quick @mention pulling someone else in. Don't start a new topic — comment on the specific thing they said.
+
+Now, as ${speaker.name}, what's your comment? Speak once, then stop.`;
+    } else {
+      userTurn = `Meeting transcript so far:
+
+${transcript}
+
+Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A single good question is often better than a statement. You can @mention another member if you want them specifically to respond. Speak once, then stop.`;
+    }
 
     return [
       { role: "system", content: sys },
@@ -2952,100 +3367,214 @@ Now, as ${speaker.name}, what's your contribution? Speak once, then stop.`;
     ];
   }
 
+  function resolveParentId(pid) {
+    if (!pid) return null;
+    const p = state.council.messages.find(x => x.id === pid);
+    if (!p) return null;
+    return p.parentId || p.id;
+  }
+
   async function councilSend() {
     const text = councilInput.value.trim();
     if (!text) return;
+    councilInput.value = "";
+    councilInput.style.height = "auto";
+    await councilSendCore(text, null);
+  }
+
+  async function councilSendCore(text, replyTargetId) {
     if (state.generating) return;
     if (!state.engine) {
       triggerFirstLoad();
       setStatus("loading", "Model is still loading — give it a moment.");
       return;
     }
-    const speakers = state.council.members.filter(m => m.active);
-    if (!speakers.length) {
-      alert("No council members are active. Seat someone — or activate a seated member — to begin.");
+    const members = state.council.members;
+    const active = members.filter(m => m.active);
+    if (!active.length) {
+      alert("Seat and activate at least one member to begin.");
       return;
     }
 
-    state.council.messages.push({ role: "user", content: text });
-    councilInput.value = "";
-    councilInput.style.height = "auto";
+    const { mentionIds } = parseMentions(text, members);
+    const commentParentId = resolveParentId(replyTargetId);
+    const userMsgId = newMessageId();
+    state.council.messages.push({
+      id: userMsgId,
+      role: "user",
+      content: text,
+      parentId: commentParentId,
+      reactions: { heart: [], lol: [] },
+      mentions: mentionIds,
+    });
     renderCouncil();
     scrollCouncilBottom();
 
     state.generating = true;
     councilSendBtn.disabled = true;
     councilStopBtn.style.display = "";
-
-    let stopRequested = false;
+    state.council.stopRequested = false;
     state.council.cancel = () => {
-      stopRequested = true;
+      state.council.stopRequested = true;
       try { state.engine?.interruptGenerate?.(); } catch (_) {}
     };
 
     try {
+      let speakers = [];
+      if (mentionIds.length) {
+        speakers = mentionIds
+          .map(id => members.find(m => m.id === id))
+          .filter(m => m && m.active);
+      } else if (replyTargetId) {
+        const target = state.council.messages.find(x => x.id === replyTargetId);
+        if (target?.role === "member") {
+          const author = members.find(m => m.id === target.memberId && m.active);
+          if (author) speakers = [author];
+        }
+      }
+      if (!speakers.length) speakers = pickInitialSpeakers(active, state.council.messages);
+
+      const isCommentFlow = !!replyTargetId;
+      let turnsUsed = 0;
+      const maxTurns = 6;
+
       for (const speaker of speakers) {
-        if (stopRequested) break;
-
-        const msgIdx = state.council.messages.push({
-          role: "member",
-          memberId: speaker.id,
-          name: speaker.name,
-          memberTitle: speaker.title,
-          mono: speaker.mono,
-          color: speaker.color,
-          content: "",
-        }) - 1;
-
-        // Render all, then find this msg's bubble for streaming updates
-        renderCouncil();
-        const bubbles = councilInner.querySelectorAll(".council-msg .council-bubble");
-        const bubble = bubbles[bubbles.length - 1];
-        scrollCouncilBottom();
-
-        try {
-          const priors = state.council.messages.slice(0, msgIdx);
-          const messages = buildCouncilMessages(speaker, priors);
-          const stream = await state.engine.chat.completions.create({
-            messages,
-            stream: true,
-            temperature: 0.75,
-            top_p: 0.95,
-            max_tokens: 500,
-          });
-          let acc = "";
-          let firstChunk = true;
-          for await (const chunk of stream) {
-            if (stopRequested) break;
-            const delta = chunk?.choices?.[0]?.delta?.content || "";
-            if (!delta) continue;
-            if (firstChunk && bubble) { bubble.innerHTML = ""; firstChunk = false; }
-            acc += delta;
-            state.council.messages[msgIdx].content = acc;
-            if (bubble) bubble.innerHTML = markdownish(acc);
-            scrollCouncilBottom();
+        if (state.council.stopRequested || turnsUsed >= maxTurns) break;
+        const turnParentId = isCommentFlow ? commentParentId : null;
+        const speakerMsg = await runSpeakerTurn(speaker, turnParentId, isCommentFlow);
+        turnsUsed++;
+        if (state.council.stopRequested) break;
+        if (!isCommentFlow && speakerMsg) {
+          turnsUsed += await runFollowUps(speakerMsg, members, maxTurns - turnsUsed);
+        } else if (isCommentFlow && speakerMsg) {
+          const chainIds = (speakerMsg.mentions || []).filter(id => id !== speaker.id);
+          for (const cid of chainIds) {
+            if (state.council.stopRequested || turnsUsed >= maxTurns) break;
+            const chainMember = members.find(x => x.id === cid && x.active);
+            if (!chainMember) continue;
+            await runSpeakerTurn(chainMember, commentParentId, true);
+            turnsUsed++;
+            break;
           }
-          if (!acc && !stopRequested) {
-            const fallback = "*(no response)*";
-            state.council.messages[msgIdx].content = fallback;
-            if (bubble) bubble.innerHTML = markdownish(fallback);
-          }
-        } catch (err) {
-          console.error(err);
-          const msg = `*Couldn't respond — ${err?.message || "unknown error"}*`;
-          state.council.messages[msgIdx].content = msg;
-          if (bubble) bubble.innerHTML = markdownish(msg);
         }
       }
     } finally {
       state.council.cancel = null;
       state.generating = false;
+      state.council.stopRequested = false;
       councilSendBtn.disabled = false;
       councilStopBtn.style.display = "none";
       renderCouncil();
       scrollCouncilBottom();
       councilInput.focus();
     }
+  }
+
+  async function runSpeakerTurn(speaker, parentId, isComment) {
+    const delayMs = 250 + Math.floor(Math.random() * 700);
+
+    const thinkEl = renderThinkingRow(speaker);
+    if (parentId && isComment) {
+      const thread = findThreadByMid(parentId);
+      if (thread) {
+        let container = thread.querySelector(":scope > .comments-container");
+        if (!container) {
+          container = el("div", "comments-container");
+          thread.appendChild(container);
+        }
+        container.appendChild(thinkEl);
+      } else {
+        councilInner.appendChild(thinkEl);
+      }
+    } else {
+      councilInner.appendChild(thinkEl);
+    }
+    scrollCouncilBottom();
+    await sleep(delayMs);
+
+    if (state.council.stopRequested) {
+      thinkEl.remove();
+      return null;
+    }
+    thinkEl.remove();
+
+    const msg = {
+      id: newMessageId(),
+      role: "member",
+      memberId: speaker.id,
+      name: speaker.name,
+      memberTitle: speaker.title,
+      mono: speaker.mono,
+      color: speaker.color,
+      content: "",
+      parentId: isComment ? parentId : null,
+      reactions: { heart: [], lol: [] },
+      mentions: [],
+    };
+    state.council.messages.push(msg);
+    renderCouncil();
+    scrollCouncilBottom();
+
+    const bubble = councilInner.querySelector(`.council-msg[data-mid="${msg.id}"] .council-bubble`);
+
+    try {
+      const messages = buildCouncilMessages(speaker, state.council.members, state.council.messages, isComment, parentId);
+      const stream = await state.engine.chat.completions.create({
+        messages,
+        stream: true,
+        temperature: 0.82,
+        top_p: 0.95,
+        max_tokens: isComment ? 180 : 380,
+      });
+      let acc = "";
+      let firstChunk = true;
+      for await (const chunk of stream) {
+        if (state.council.stopRequested) break;
+        const delta = chunk?.choices?.[0]?.delta?.content || "";
+        if (!delta) continue;
+        if (firstChunk && bubble) { bubble.innerHTML = ""; firstChunk = false; }
+        acc += delta;
+        msg.content = acc;
+        if (bubble) bubble.innerHTML = renderContent(acc, state.council.members);
+        scrollCouncilBottom();
+      }
+      if (!acc) msg.content = "*(no response)*";
+      const { mentionIds } = parseMentions(msg.content, state.council.members);
+      msg.mentions = mentionIds;
+      addBotReactions(msg);
+    } catch (err) {
+      console.error(err);
+      msg.content = `*(couldn't respond — ${err?.message || "unknown"})*`;
+    }
+
+    renderCouncil();
+    scrollCouncilBottom();
+    return msg;
+  }
+
+  async function runFollowUps(parentMsg, members, budget) {
+    if (budget <= 0 || !parentMsg || parentMsg.role !== "member") return 0;
+    const mentioned = (parentMsg.mentions || []).filter(id => id !== parentMsg.memberId);
+    const activeOthers = members.filter(m => m.active && m.id !== parentMsg.memberId);
+    const mustRespond = activeOthers.filter(m => mentioned.includes(m.id));
+    const candidates = activeOthers.filter(m => !mustRespond.includes(m));
+
+    let turns = 0;
+    for (const m of mustRespond) {
+      if (state.council.stopRequested || turns >= budget) break;
+      const commentMsg = await runSpeakerTurn(m, parentMsg.id, true);
+      if (commentMsg) turns++;
+    }
+    const extraCap = Math.max(0, 2 - mustRespond.length);
+    let extras = 0;
+    for (const m of candidates) {
+      if (state.council.stopRequested || turns >= budget || extras >= extraCap) break;
+      if (Math.random() < 0.28) {
+        const cm = await runSpeakerTurn(m, parentMsg.id, true);
+        if (cm) { turns++; extras++; }
+      }
+    }
+    return turns;
   }
 
   // Composer events
@@ -3063,6 +3592,105 @@ Now, as ${speaker.name}, what's your contribution? Speak once, then stop.`;
   councilStopBtn.addEventListener("click", () => {
     if (state.council.cancel) state.council.cancel();
   });
+
+  // Delegated click for reactions + reply on council messages
+  councilInner.addEventListener("click", (ev) => {
+    const reactBtn = ev.target.closest(".react-btn");
+    if (reactBtn) {
+      toggleUserReaction(reactBtn.dataset.mid, reactBtn.dataset.type);
+      return;
+    }
+    const replyBtn = ev.target.closest(".reply-btn");
+    if (replyBtn) {
+      openInlineReply(replyBtn.dataset.mid);
+      return;
+    }
+    const inlineCancel = ev.target.closest(".inline-cancel");
+    if (inlineCancel) { closeInlineReply(); return; }
+    const inlineSend = ev.target.closest(".inline-send");
+    if (inlineSend) { sendInlineReply(); return; }
+  });
+
+  function toggleUserReaction(mid, type) {
+    const msg = state.council.messages.find(x => x.id === mid);
+    if (!msg) return;
+    msg.reactions = msg.reactions || { heart: [], lol: [] };
+    const arr = msg.reactions[type] || (msg.reactions[type] = []);
+    const idx = arr.indexOf("user");
+    const added = idx === -1;
+    if (added) arr.push("user");
+    else arr.splice(idx, 1);
+    updateReactionButton(mid, type, added);
+  }
+
+  function updateReactionButton(mid, type, animate) {
+    const btn = councilInner.querySelector(`.react-btn[data-mid="${mid}"][data-type="${type}"]`);
+    if (!btn) return;
+    const msg = state.council.messages.find(x => x.id === mid);
+    const n = msg.reactions[type].length;
+    const countEl = btn.querySelector(".count");
+    if (countEl) countEl.textContent = n ? String(n) : "";
+    btn.classList.toggle("active", msg.reactions[type].includes("user"));
+    btn.title = n ? reactionTooltip(msg.reactions[type]) : "";
+    if (animate) {
+      btn.classList.remove("pop");
+      void btn.offsetWidth;
+      btn.classList.add("pop");
+    }
+  }
+
+  function openInlineReply(mid) {
+    closeInlineReply();
+    const msg = state.council.messages.find(x => x.id === mid);
+    if (!msg) return;
+    state.council.replyTo = mid;
+    const msgEl = councilInner.querySelector(`.council-msg[data-mid="${mid}"]`);
+    if (!msgEl) return;
+    const body = msgEl.querySelector(".council-body");
+    const target = msg.role === "user" ? "yourself" : (msg.name || "the room");
+    const box = el("div", "inline-reply");
+    box.dataset.parentId = mid;
+    const ta = document.createElement("textarea");
+    ta.placeholder = `Reply to ${target}… (type @ to mention)`;
+    ta.rows = 1;
+    ta.addEventListener("input", () => {
+      ta.style.height = "auto";
+      ta.style.height = Math.min(120, ta.scrollHeight) + "px";
+    });
+    ta.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendInlineReply(); }
+      if (e.key === "Escape") { e.preventDefault(); closeInlineReply(); }
+    });
+    const actions = el("div", "inline-reply-actions");
+    actions.appendChild(el("span", "hint", "Enter to send · Esc to cancel · @ to mention"));
+    const cancel = el("button", "btn ghost inline-cancel", "Cancel");
+    cancel.type = "button";
+    const send = el("button", "btn primary inline-send", "Reply");
+    send.type = "button";
+    actions.appendChild(cancel);
+    actions.appendChild(send);
+    box.appendChild(ta);
+    box.appendChild(actions);
+    body.appendChild(box);
+    setTimeout(() => ta.focus(), 40);
+  }
+
+  function closeInlineReply() {
+    const existing = councilInner.querySelector(".inline-reply");
+    if (existing) existing.remove();
+    state.council.replyTo = null;
+  }
+
+  async function sendInlineReply() {
+    const existing = councilInner.querySelector(".inline-reply");
+    if (!existing) return;
+    const parentId = existing.dataset.parentId;
+    const ta = existing.querySelector("textarea");
+    const text = (ta?.value || "").trim();
+    if (!text) return;
+    closeInlineReply();
+    await councilSendCore(text, parentId);
+  }
 
   // Custom expert modal
   const customModal = $("customExpertModal");
