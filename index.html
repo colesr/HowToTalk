@@ -3525,6 +3525,21 @@ ${speaker.name}:`;
 
     try {
       const messages = buildCouncilMessages(speaker, state.council.members, state.council.messages, isComment, parentId);
+
+      // Watchdog: if no new tokens for 30s, force-interrupt so the turn never hangs forever.
+      let watchdog = null;
+      let stalled = false;
+      const kickWatchdog = () => {
+        if (watchdog) clearTimeout(watchdog);
+        watchdog = setTimeout(() => {
+          stalled = true;
+          console.warn(`[council] watchdog: no tokens from ${speaker.name} in 30s — aborting`);
+          try { state.engine?.interruptGenerate?.(); } catch (_) {}
+        }, 30000);
+      };
+      const clearWatchdog = () => { if (watchdog) { clearTimeout(watchdog); watchdog = null; } };
+
+      kickWatchdog();
       const stream = await state.engine.chat.completions.create({
         messages,
         stream: true,
@@ -3534,20 +3549,29 @@ ${speaker.name}:`;
       });
       let acc = "";
       let firstChunk = true;
-      for await (const chunk of stream) {
-        if (state.council.stopRequested) break;
-        const delta = chunk?.choices?.[0]?.delta?.content || "";
-        const done = chunk?.choices?.[0]?.finish_reason;
-        if (delta) {
+      try {
+        for await (const chunk of stream) {
+          if (state.council.stopRequested || stalled) break;
+          const delta = chunk?.choices?.[0]?.delta?.content || "";
+          if (!delta) continue;
+          kickWatchdog();
           if (firstChunk && bubble) { bubble.innerHTML = ""; firstChunk = false; }
           acc += delta;
           msg.content = acc;
           if (bubble) bubble.innerHTML = renderContent(acc, state.council.members);
           scrollCouncilBottom();
         }
-        if (done) break;
+      } finally {
+        clearWatchdog();
       }
-      if (!acc) msg.content = "*(no response)*";
+
+      if (stalled && !acc) {
+        msg.content = `*(${speaker.name} didn't produce a response — maybe try switching to a larger model or fewer seated members)*`;
+      } else if (!acc) {
+        msg.content = "*(no response)*";
+      } else if (stalled) {
+        msg.content = acc + "…";
+      }
       const { mentionIds } = parseMentions(msg.content, state.council.members);
       msg.mentions = mentionIds;
       addBotReactions(msg);
