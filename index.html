@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Communication Enhancement Suite — Private AI coach for the conversations on your mind</title>
+<title>Communication Analysis Suite — Private AI coach for the conversations on your mind</title>
 <meta name="description" content="A private, browser-only AI that helps you make sense of tricky conversations — decode tone, plan difficult talks, and stop overthinking that unread text." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -750,6 +750,17 @@
     background: rgba(197,137,64,0.1);
     border-color: rgba(197,137,64,0.28);
   }
+  .react-btn.up.active {
+    color: #4e7a56;
+    background: rgba(78,122,86,0.1);
+    border-color: rgba(78,122,86,0.28);
+  }
+  .react-btn.down.active {
+    color: #a94442;
+    background: rgba(169,68,66,0.08);
+    border-color: rgba(169,68,66,0.25);
+  }
+  .react-btn.up .icon, .react-btn.down .icon { font-size: 10px; }
   .react-btn.pop .icon {
     animation: react-pop 420ms cubic-bezier(.2,1.2,.3,1);
   }
@@ -1443,7 +1454,7 @@
   <aside id="sidebar">
     <div class="brand">
       <span class="dot"></span>
-      <h1>Communication Enhancement Suite</h1>
+      <h1>Communication Analysis Suite</h1>
     </div>
     <div class="tagline">A private space to think through the conversations on your mind.</div>
 
@@ -1663,7 +1674,7 @@
 
 <script type="module">
   // ————————————————————————————————————————————————
-  // Communication Enhancement Suite — single-file WebGPU chat app
+  // Communication Analysis Suite — single-file WebGPU chat app
   // Uses @mlc-ai/web-llm for in-browser LLM inference.
   // ————————————————————————————————————————————————
 
@@ -2165,7 +2176,7 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
     document.body.innerHTML = `
       <div class="unsupported">
         <h2>WebGPU isn't available here</h2>
-        <p>Communication Enhancement Suite runs entirely on your device using WebGPU, which this browser doesn't support (or has disabled).</p>
+        <p>Communication Analysis Suite runs entirely on your device using WebGPU, which this browser doesn't support (or has disabled).</p>
         <p>Try the latest <b>Chrome</b>, <b>Edge</b>, or <b>Brave</b> on desktop. On Firefox you can enable it under <code>about:config</code> → <code>dom.webgpu.enabled</code>.</p>
       </div>`;
     throw new Error("WebGPU not available");
@@ -2541,7 +2552,7 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
   }
 
   function cardFooter() {
-    return el("div", "card-footer", "— Communication Enhancement Suite");
+    return el("div", "card-footer", "— Communication Analysis Suite");
   }
 
   function renderLoadingCard(m) {
@@ -2583,7 +2594,7 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
         lines.push("");
       }
       if (data.overallHealth) lines.push(`Overall: ${data.overallHealth}`);
-      lines.push("— Communication Enhancement Suite");
+      lines.push("— Communication Analysis Suite");
       return lines.join("\n");
     };
     const { header } = cardHeader("Gottman Institute research · scan of your thread", title, (btn) => copyText(copyPayload(), btn));
@@ -2663,7 +2674,7 @@ Read my draft carefully. Flag anything likely to be misread, land defensively, o
       if (data.feelings?.length) lines.push(`Feelings: ${data.feelings.join(" · ")}`);
       if (data.needs?.length) lines.push(`Needs: ${data.needs.join(" · ")}`);
       if (data.howToRespond) lines.push(`\nOne way to respond: ${data.howToRespond}`);
-      lines.push("", "— Communication Enhancement Suite");
+      lines.push("", "— Communication Analysis Suite");
       return lines.join("\n");
     };
     const { header } = cardHeader("A translation", title, (btn) => copyText(copyPayload(), btn));
@@ -2992,21 +3003,35 @@ What you bring to the council: the translation layer between different cognitive
     return html;
   }
 
-  // Bot reactions: probabilistic hearts/lols from non-authors with humor/warmth bias.
+  // Bot reactions: probabilistic hearts/lols + votes from non-authors.
   function addBotReactions(msg) {
     if (!msg || msg.role !== "member") return;
+    // Make sure arrays exist
+    msg.reactions = msg.reactions || {};
+    for (const k of ["heart","lol","up","down"]) msg.reactions[k] = msg.reactions[k] || [];
     const others = state.council.members.filter(m => m.active && m.id !== msg.memberId);
     const lower = (msg.content || "").toLowerCase();
-    const humorHints = /(ha ha|haha|lol|joking|kidding|funny|ridiculous|😂|😅|😆|😭|😂|🤣|\bamusing\b)/i.test(lower);
+    const humorHints = /(ha ha|haha|lol|joking|kidding|funny|ridiculous|😂|😅|😆|😭|🤣|\bamusing\b)/i.test(lower);
     const warmthHints = /(love|beautiful|honor|honest|brave|proud of you|i hear you|thank you|appreciate|i'm with you|same here)/i.test(lower);
     const questionHints = /\?/.test(lower);
+    const disagreementHints = /(disagree|i'm not sure about|that's not|i'd push back|actually,|but that|i don't buy)/i.test(lower);
     for (const m of others) {
+      // hearts and lols (independent of voting)
       const rHeart = warmthHints ? 0.42 : (questionHints ? 0.22 : 0.18);
       const rLol   = humorHints ? 0.55 : 0.08;
       if (Math.random() < rHeart && !msg.reactions.heart.includes(m.id)) {
         msg.reactions.heart.push(m.id);
       } else if (Math.random() < rLol && !msg.reactions.lol.includes(m.id)) {
         msg.reactions.lol.push(m.id);
+      }
+      // votes — mutually exclusive, upvotes are common, downvotes are rare
+      const rUp = questionHints ? 0.34 : 0.26;
+      const rDown = disagreementHints ? 0.12 : 0.03;
+      const roll = Math.random();
+      if (roll < rUp && !msg.reactions.up.includes(m.id)) {
+        msg.reactions.up.push(m.id);
+      } else if (roll < rUp + rDown && !msg.reactions.down.includes(m.id)) {
+        msg.reactions.down.push(m.id);
       }
     }
   }
@@ -3241,36 +3266,29 @@ What you bring to the council: the translation layer between different cognitive
   function renderReactionsRow(m) {
     const row = el("div", "reactions");
     row.dataset.mid = m.id;
-    const hearts = m.reactions?.heart?.length || 0;
-    const lols = m.reactions?.lol?.length || 0;
-    const userHeart = !!m.reactions?.heart?.includes("user");
-    const userLol = !!m.reactions?.lol?.includes("user");
-
-    const heartBtn = el("button", "react-btn heart" + (userHeart ? " active" : ""));
-    heartBtn.type = "button";
-    heartBtn.dataset.mid = m.id;
-    heartBtn.dataset.type = "heart";
-    heartBtn.setAttribute("aria-label", "Love");
-    heartBtn.appendChild(el("span", "icon", "♥"));
-    heartBtn.appendChild(el("span", "count", hearts ? String(hearts) : ""));
-    if (hearts) heartBtn.title = reactionTooltip(m.reactions.heart);
-
-    const lolBtn = el("button", "react-btn lol" + (userLol ? " active" : ""));
-    lolBtn.type = "button";
-    lolBtn.dataset.mid = m.id;
-    lolBtn.dataset.type = "lol";
-    lolBtn.setAttribute("aria-label", "Laugh");
-    lolBtn.appendChild(el("span", "icon", "😂"));
-    lolBtn.appendChild(el("span", "count", lols ? String(lols) : ""));
-    if (lols) lolBtn.title = reactionTooltip(m.reactions.lol);
+    const r = m.reactions || {};
+    const mkBtn = (type, icon, label) => {
+      const arr = r[type] || [];
+      const userHas = arr.includes("user");
+      const btn = el("button", `react-btn ${type}` + (userHas ? " active" : ""));
+      btn.type = "button";
+      btn.dataset.mid = m.id;
+      btn.dataset.type = type;
+      btn.setAttribute("aria-label", label);
+      btn.appendChild(el("span", "icon", icon));
+      btn.appendChild(el("span", "count", arr.length ? String(arr.length) : ""));
+      if (arr.length) btn.title = reactionTooltip(arr);
+      return btn;
+    };
+    row.appendChild(mkBtn("up", "▲", "Upvote"));
+    row.appendChild(mkBtn("down", "▼", "Downvote"));
+    row.appendChild(mkBtn("heart", "♥", "Love"));
+    row.appendChild(mkBtn("lol", "😂", "Laugh"));
 
     const replyBtn = el("button", "reply-btn", "Reply");
     replyBtn.type = "button";
     replyBtn.dataset.mid = m.id;
     replyBtn.dataset.action = "reply";
-
-    row.appendChild(heartBtn);
-    row.appendChild(lolBtn);
     row.appendChild(replyBtn);
     return row;
   }
@@ -3404,7 +3422,7 @@ Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A 
       role: "user",
       content: text,
       parentId: commentParentId,
-      reactions: { heart: [], lol: [] },
+      reactions: { heart: [], lol: [], up: [], down: [] },
       mentions: mentionIds,
     });
     renderCouncil();
@@ -3508,7 +3526,7 @@ Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A 
       color: speaker.color,
       content: "",
       parentId: isComment ? parentId : null,
-      reactions: { heart: [], lol: [] },
+      reactions: { heart: [], lol: [], up: [], down: [] },
       mentions: [],
     };
     state.council.messages.push(msg);
@@ -3614,12 +3632,25 @@ Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A 
   function toggleUserReaction(mid, type) {
     const msg = state.council.messages.find(x => x.id === mid);
     if (!msg) return;
-    msg.reactions = msg.reactions || { heart: [], lol: [] };
-    const arr = msg.reactions[type] || (msg.reactions[type] = []);
+    msg.reactions = msg.reactions || { heart: [], lol: [], up: [], down: [] };
+    for (const k of ["heart","lol","up","down"]) msg.reactions[k] = msg.reactions[k] || [];
+    const arr = msg.reactions[type];
     const idx = arr.indexOf("user");
     const added = idx === -1;
-    if (added) arr.push("user");
-    else arr.splice(idx, 1);
+    if (added) {
+      arr.push("user");
+      // Votes are mutually exclusive — an upvote clears any downvote and vice versa
+      const opposite = type === "up" ? "down" : (type === "down" ? "up" : null);
+      if (opposite) {
+        const oi = msg.reactions[opposite].indexOf("user");
+        if (oi !== -1) {
+          msg.reactions[opposite].splice(oi, 1);
+          updateReactionButton(mid, opposite, false);
+        }
+      }
+    } else {
+      arr.splice(idx, 1);
+    }
     updateReactionButton(mid, type, added);
   }
 
