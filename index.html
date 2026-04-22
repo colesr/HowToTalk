@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How to Talk — Private AI coach for the conversations on your mind</title>
+<meta name="description" content="A private, browser-only AI that helps you make sense of tricky conversations — decode tone, plan difficult talks, and stop overthinking that unread text." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #f6f3ee;
+    --bg-2: #ece6dc;
+    --ink: #2a2724;
+    --ink-soft: #5b564f;
+    --ink-faint: #8a8278;
+    --accent: #6b8a7a;
+    --accent-deep: #3f5a4c;
+    --warm: #c57b5a;
+    --line: #e0d8ca;
+    --card: #fffcf7;
+    --user-bubble: #e6efe8;
+    --ai-bubble: #fffcf7;
+    --error: #a94442;
+    --shadow: 0 1px 0 rgba(0,0,0,0.02), 0 8px 24px -12px rgba(42,39,36,0.18);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    background: radial-gradient(1200px 800px at 80% -10%, #efe7d7 0%, transparent 60%),
+                radial-gradient(900px 600px at -10% 110%, #e4ece6 0%, transparent 55%),
+                var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .app {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    aside { display: none; }
+    aside.open { display: flex; position: fixed; inset: 0; z-index: 30; background: var(--bg); }
+  }
+
+  /* Sidebar */
+  aside {
+    border-right: 1px solid var(--line);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    overflow-y: auto;
+    background: linear-gradient(180deg, rgba(255,252,247,0.4), rgba(255,252,247,0));
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .brand h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .brand .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(107,138,122,0.15);
+  }
+  .tagline {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: "Fraunces", Georgia, serif;
+  }
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 12px 0 8px;
+  }
+  .ctx-box {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    min-height: 54px;
+    white-space: pre-wrap;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .ctx-box.empty { color: var(--ink-faint); font-style: italic; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 120ms ease, border-color 120ms ease, transform 80ms ease;
+  }
+  .btn:hover { background: #fff; border-color: #d0c6b4; }
+  .btn:active { transform: translateY(1px); }
+  .btn.primary {
+    background: var(--accent-deep);
+    color: #fff;
+    border-color: var(--accent-deep);
+  }
+  .btn.primary:hover { background: #35493e; }
+  .btn.ghost { background: transparent; }
+  .btn.danger { color: var(--error); }
+  .btn-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .model-picker {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  select {
+    flex: 1;
+    font: inherit;
+    font-size: 13px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+  }
+  .status {
+    font-size: 12px;
+    color: var(--ink-soft);
+    min-height: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status .pulse {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--ink-faint);
+  }
+  .status.loading .pulse { background: var(--warm); animation: pulse 1.2s ease-in-out infinite; }
+  .status.ready .pulse { background: var(--accent); }
+  .status.error .pulse { background: var(--error); }
+  @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+  progress {
+    width: 100%;
+    height: 4px;
+    accent-color: var(--accent);
+    border: 0;
+    background: var(--bg-2);
+    border-radius: 4px;
+    overflow: hidden;
+    display: none;
+  }
+  progress[value] { display: block; }
+  .privacy-note {
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--ink-faint);
+    padding: 10px 12px;
+    background: rgba(107,138,122,0.08);
+    border: 1px solid rgba(107,138,122,0.18);
+    border-radius: 8px;
+  }
+  .privacy-note b { color: var(--accent-deep); font-weight: 600; }
+
+  /* Main */
+  main {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    min-height: 0;
+  }
+  .topbar {
+    padding: 14px 28px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: rgba(246,243,238,0.7);
+    backdrop-filter: saturate(1.1) blur(6px);
+  }
+  .topbar .title {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .topbar .sub {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .menu-btn { display: none; }
+  @media (max-width: 900px) { .menu-btn { display: inline-flex; } }
+
+  .chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 28px 16px;
+    scroll-behavior: smooth;
+  }
+  .chat-inner { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+  .msg {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .msg .avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    font-size: 13px; font-weight: 600;
+    font-family: "Fraunces", Georgia, serif;
+  }
+  .msg.user .avatar { background: var(--user-bubble); color: var(--accent-deep); }
+  .msg.ai .avatar { background: var(--accent-deep); color: #fff; }
+  .bubble {
+    padding: 14px 18px;
+    border-radius: 14px;
+    line-height: 1.65;
+    font-size: 15px;
+    border: 1px solid var(--line);
+    max-width: 100%;
+    word-wrap: break-word;
+  }
+  .msg.user .bubble { background: var(--user-bubble); border-color: #cfdbd1; }
+  .msg.ai .bubble { background: var(--ai-bubble); }
+  .bubble p { margin: 0 0 10px; }
+  .bubble p:last-child { margin-bottom: 0; }
+  .bubble strong { color: var(--accent-deep); }
+  .bubble em { color: var(--ink-soft); }
+  .bubble ul, .bubble ol { margin: 6px 0 10px; padding-left: 22px; }
+  .bubble li { margin: 4px 0; }
+  .bubble code { background: var(--bg-2); padding: 1px 5px; border-radius: 4px; font-size: 0.92em; }
+  .bubble blockquote {
+    margin: 8px 0;
+    padding: 2px 12px;
+    border-left: 3px solid var(--accent);
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+  .welcome {
+    text-align: center;
+    padding: 40px 20px 20px;
+    color: var(--ink-soft);
+  }
+  .welcome h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 28px;
+    color: var(--ink);
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  .welcome p {
+    font-size: 15px;
+    max-width: 520px;
+    margin: 0 auto 24px;
+    line-height: 1.6;
+  }
+  .starters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+    max-width: 720px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .starter {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 120ms, transform 120ms, background 120ms;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+  .starter:hover { border-color: var(--accent); background: #fff; }
+  .starter .label {
+    display: block;
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    font-size: 14px;
+  }
+
+  /* Composer */
+  .composer-wrap {
+    padding: 12px 28px 20px;
+    border-top: 1px solid var(--line);
+    background: rgba(246,243,238,0.85);
+    backdrop-filter: saturate(1.1) blur(6px);
+  }
+  .composer {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 8px 8px 8px 14px;
+    box-shadow: var(--shadow);
+    transition: border-color 120ms;
+  }
+  .composer:focus-within { border-color: var(--accent); }
+  .composer textarea {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.55;
+    background: transparent;
+    color: var(--ink);
+    padding: 8px 0;
+    resize: none;
+    max-height: 200px;
+    min-height: 24px;
+  }
+  .composer textarea::placeholder { color: var(--ink-faint); }
+  .send-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: var(--accent-deep);
+    color: #fff;
+    border: 0;
+    cursor: pointer;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    transition: background 120ms, opacity 120ms;
+  }
+  .send-btn:hover:not(:disabled) { background: #35493e; }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .send-btn svg { width: 18px; height: 18px; }
+  .composer-hint {
+    max-width: 760px;
+    margin: 8px auto 0;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    text-align: center;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(42,39,36,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .modal header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal header h3 {
+    margin: 0;
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 18px;
+  }
+  .modal .body { padding: 18px 20px; overflow-y: auto; }
+  .modal .body p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; margin: 0 0 12px; }
+  .modal .body label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    margin: 10px 0 6px;
+  }
+  .modal textarea, .modal input[type="text"] {
+    width: 100%;
+    font: inherit;
+    font-size: 13.5px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+    resize: vertical;
+  }
+  .modal textarea { min-height: 180px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 12.5px; line-height: 1.55; }
+  .modal footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .drop-zone {
+    border: 2px dashed var(--line);
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 120ms, background 120ms;
+  }
+  .drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: rgba(107,138,122,0.05); color: var(--accent-deep); }
+
+  /* Typing indicator */
+  .typing {
+    display: inline-flex;
+    gap: 4px;
+    padding: 2px 4px;
+  }
+  .typing span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ink-faint);
+    animation: typing 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  .unsupported {
+    max-width: 520px;
+    margin: 60px auto;
+    padding: 30px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    text-align: center;
+  }
+  .unsupported h2 { font-family: "Fraunces", Georgia, serif; margin-top: 0; }
+  .unsupported code { background: var(--bg-2); padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <aside id="sidebar">
+    <div class="brand">
+      <span class="dot"></span>
+      <h1>How to Talk</h1>
+    </div>
+    <div class="tagline">A private space to think through the conversations on your mind.</div>
+
+    <div>
+      <div class="section-label">Model</div>
+      <div class="model-picker">
+        <select id="modelSelect"></select>
+      </div>
+      <div class="status" id="status"><span class="pulse"></span><span id="statusText">Select a model to begin</span></div>
+      <progress id="progress" max="100"></progress>
+    </div>
+
+    <div>
+      <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Conversation context</span>
+        <button class="btn ghost" id="clearCtxBtn" style="font-size:11px;padding:2px 6px;">Clear</button>
+      </div>
+      <div id="ctxBox" class="ctx-box empty">No conversation history added yet.</div>
+      <div class="btn-row" style="margin-top:8px;">
+        <button class="btn" id="addCtxBtn">Add / paste conversation</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Quick actions</div>
+      <div class="btn-row">
+        <button class="btn ghost" id="newChatBtn">New chat</button>
+      </div>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <div class="privacy-note">
+      <b>Fully private.</b> The model runs entirely in your browser via WebGPU. Nothing you type or paste ever leaves your device.
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div>
+        <div class="title">Let's talk it through</div>
+        <div class="sub" id="topSub">An AI grounded in communication science — here to help, not judge.</div>
+      </div>
+      <button class="btn menu-btn" id="menuBtn">Menu</button>
+    </div>
+
+    <div class="chat" id="chat">
+      <div class="chat-inner" id="chatInner">
+        <div class="welcome" id="welcome">
+          <h2>What's on your mind?</h2>
+          <p>Maybe they left you on read. Maybe a big meeting is coming up. Maybe something they said just won't stop replaying. Share what's happening — I'll help you make sense of it.</p>
+          <div class="starters" id="starters">
+            <div class="starter" data-prompt="A friend I texted two days ago still hasn't responded. It's out of character for them. Help me think through what might be going on without spiraling.">
+              <span class="label">The unread text</span>
+              Why they might not have replied — and how to not spiral.
+            </div>
+            <div class="starter" data-prompt="I have a difficult meeting tomorrow with a boss who tends to be critical. Help me prepare — I want to stay grounded, be heard, and not get defensive.">
+              <span class="label">A tough meeting</span>
+              Prepare for a hard conversation with a boss or client.
+            </div>
+            <div class="starter" data-prompt="Someone said something nice but it felt off. I can't tell if they were being genuine or not. Can you help me think about what signals to look for?">
+              <span class="label">Was that genuine?</span>
+              Think through mixed signals in what someone said.
+            </div>
+            <div class="starter" data-prompt="Can you analyze the tone of the conversation I've added in the context, and tell me what patterns you notice in how we communicate?">
+              <span class="label">Analyze a thread</span>
+              Paste a conversation and I'll analyze the dynamic.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="composer-wrap">
+      <div class="composer">
+        <textarea id="input" rows="1" placeholder="Tell me what's going on…" disabled></textarea>
+        <button class="send-btn" id="sendBtn" disabled title="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14 0"/><path d="M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="composer-hint">Press <b>Enter</b> to send · <b>Shift+Enter</b> for a new line · Everything stays on your device.</div>
+    </div>
+  </main>
+</div>
+
+<!-- Context modal -->
+<div class="modal-backdrop" id="ctxModal">
+  <div class="modal">
+    <header>
+      <h3>Add conversation history</h3>
+      <button class="btn ghost" id="closeCtxBtn">Close</button>
+    </header>
+    <div class="body">
+      <p>Paste a conversation between you and the other person — texts, emails, chat transcripts. Anything you share stays on your device. The more context you give, the more precise I can be.</p>
+      <div class="drop-zone" id="dropZone">
+        Drop a <b>.txt</b>, <b>.md</b>, <b>.json</b>, or <b>.csv</b> file here — or click to choose one.
+        <input type="file" id="fileInput" accept=".txt,.md,.json,.csv,.log,text/*" style="display:none;" multiple />
+      </div>
+      <label for="relLabel">Who is this conversation with? <span style="font-weight:400;color:var(--ink-faint);">(optional)</span></label>
+      <input type="text" id="relLabel" placeholder="e.g. my sister Alex, my manager, a close friend" />
+      <label for="ctxInput">Paste the conversation</label>
+      <textarea id="ctxInput" placeholder="Me: Hey, just checking in — wanted to see how you're doing.&#10;Alex: …"></textarea>
+    </div>
+    <footer>
+      <button class="btn ghost" id="cancelCtxBtn">Cancel</button>
+      <button class="btn primary" id="saveCtxBtn">Save context</button>
+    </footer>
+  </div>
+</div>
+
+<script type="module">
+  // ————————————————————————————————————————————————
+  // How to Talk — single-file WebGPU chat app
+  // Uses @mlc-ai/web-llm for in-browser LLM inference.
+  // ————————————————————————————————————————————————
+
+  const SYSTEM_PROMPT = `You are "How to Talk" — a warm, grounded AI coach for the everyday conversations that weigh on people. Your user is coming to you because they are overthinking, anxious, or unsure about an interaction with another human: a text that went unanswered, a comment that felt off, a meeting they're dreading, a relationship they want to take care of.
+
+Your single purpose is to help them think more clearly and feel less alone, so they can show up in their relationships with confidence, respect, and genuine connection.
+
+How you think:
+- Draw on established communication science: attachment theory, nonviolent communication (Rosenberg), the Gottman Institute's research on conflict and repair, emotional intelligence (Goleman), social penetration theory, politeness theory, high-/low-context communication, the fundamental attribution error, and pragmatics of tone and register.
+- When you reference a framework, name it briefly and plainly — no jargon dumps. A reader who has never heard of it should still understand.
+- Always consider multiple plausible interpretations of the other person's behavior. Resist the instinct to confirm the user's worst fear. Offer the generous read alongside the cautious one.
+- Distinguish what is observable (the literal words, the timing, the patterns in context) from what is inference. Be explicit about the difference.
+- When the user has provided conversation history in context, analyze it concretely: tone, reciprocity, latency, repair attempts, bids for connection, asymmetries in vulnerability or effort.
+
+How you respond:
+- Start by acknowledging what the user is feeling in one short, natural sentence — not performative, not saccharine. Then move to substance.
+- Be specific. Generic reassurance ("don't worry, it'll be fine") is worse than nothing. Give them something concrete to think about or try.
+- When it helps, offer: (a) a range of plausible readings of the situation, (b) a concrete suggested action or script, (c) one question for them to sit with.
+- Prefer short paragraphs. Use bold sparingly for the idea they should walk away with. Use lists only when actually enumerating distinct items.
+- Never be preachy. Never lecture on communication theory when the person just needs a kind, clear read.
+- Never catastrophize, and never dismiss. If the evidence in context genuinely suggests a problem (contempt, stonewalling, manipulation), name it clearly and kindly — the user deserves the truth.
+- Your goal is always to maximize genuine connection between the user and the other person, grounded in mutual respect and support. That sometimes means helping the user advocate for themselves; sometimes it means helping them extend grace.
+
+What you never do:
+- Diagnose the other person with mental-health conditions. You are not their therapist.
+- Write a message *for* the user and push them to send it unchanged. Offer options and let them choose their voice.
+- Pretend to know things you can't know. If a read depends on information you don't have, ask for it or flag the uncertainty.
+- Assume the user's framing is the only truth. People under stress narrate selectively — it's your job to gently widen the lens.
+
+If the user shares a safety concern (abuse, self-harm, someone in danger), respond with care, acknowledge the seriousness, and suggest professional support (a therapist, a trusted person, or a crisis line like 988 in the US). Do not try to handle it alone.
+
+You are private — you run entirely in the user's browser. They can trust you with what they wouldn't say out loud.`;
+
+  // Available models — balance quality vs. size
+  const MODELS = [
+    { id: "Llama-3.2-3B-Instruct-q4f16_1-MLC", label: "Llama 3.2 3B (recommended, ~2 GB)" },
+    { id: "Llama-3.2-1B-Instruct-q4f16_1-MLC", label: "Llama 3.2 1B (fast, ~900 MB)" },
+    { id: "Phi-3.5-mini-instruct-q4f16_1-MLC", label: "Phi-3.5 mini (~2.5 GB)" },
+    { id: "Hermes-3-Llama-3.2-3B-q4f16_1-MLC", label: "Hermes 3 (Llama 3.2 3B) (~2 GB)" },
+    { id: "Qwen2.5-3B-Instruct-q4f16_1-MLC", label: "Qwen 2.5 3B (~2 GB)" },
+    { id: "Llama-3.1-8B-Instruct-q4f32_1-MLC-1k", label: "Llama 3.1 8B (best, ~5 GB)" },
+  ];
+
+  // State
+  const state = {
+    engine: null,
+    loadedModelId: null,
+    loading: false,
+    messages: [],        // { role: 'user'|'assistant', content: string }
+    contextText: "",     // the uploaded/pasted conversation
+    relLabel: "",
+    generating: false,
+    abortCtl: null,
+  };
+
+  // DOM refs
+  const $ = (id) => document.getElementById(id);
+  const chat = $("chat");
+  const chatInner = $("chatInner");
+  const welcome = $("welcome");
+  const input = $("input");
+  const sendBtn = $("sendBtn");
+  const modelSelect = $("modelSelect");
+  const statusEl = $("status");
+  const statusText = $("statusText");
+  const progressEl = $("progress");
+  const ctxBox = $("ctxBox");
+  const addCtxBtn = $("addCtxBtn");
+  const clearCtxBtn = $("clearCtxBtn");
+  const ctxModal = $("ctxModal");
+  const closeCtxBtn = $("closeCtxBtn");
+  const cancelCtxBtn = $("cancelCtxBtn");
+  const saveCtxBtn = $("saveCtxBtn");
+  const ctxInput = $("ctxInput");
+  const relLabelInput = $("relLabel");
+  const dropZone = $("dropZone");
+  const fileInput = $("fileInput");
+  const newChatBtn = $("newChatBtn");
+  const starters = $("starters");
+  const menuBtn = $("menuBtn");
+  const sidebar = $("sidebar");
+
+  // —————————————————————————————— WebGPU check
+  if (!("gpu" in navigator)) {
+    document.body.innerHTML = `
+      <div class="unsupported">
+        <h2>WebGPU isn't available here</h2>
+        <p>How to Talk runs entirely on your device using WebGPU, which this browser doesn't support (or has disabled).</p>
+        <p>Try the latest <b>Chrome</b>, <b>Edge</b>, or <b>Brave</b> on desktop. On Firefox you can enable it under <code>about:config</code> → <code>dom.webgpu.enabled</code>.</p>
+      </div>`;
+    throw new Error("WebGPU not available");
+  }
+
+  // —————————————————————————————— Populate model picker
+  MODELS.forEach((m, i) => {
+    const opt = document.createElement("option");
+    opt.value = m.id;
+    opt.textContent = m.label;
+    if (i === 0) opt.selected = true;
+    modelSelect.appendChild(opt);
+  });
+
+  // —————————————————————————————— Load WebLLM and engine
+  let webllm;
+  async function ensureWebLLM() {
+    if (webllm) return webllm;
+    setStatus("loading", "Fetching runtime…");
+    webllm = await import("https://esm.run/@mlc-ai/web-llm");
+    return webllm;
+  }
+
+  function setStatus(kind, text) {
+    statusEl.classList.remove("loading", "ready", "error");
+    if (kind) statusEl.classList.add(kind);
+    statusText.textContent = text;
+  }
+
+  async function loadModel(modelId) {
+    if (state.loading) return;
+    if (state.loadedModelId === modelId && state.engine) return;
+    state.loading = true;
+    setStatus("loading", "Preparing model…");
+    progressEl.value = 0;
+    progressEl.style.display = "block";
+    sendBtn.disabled = true;
+    input.disabled = true;
+
+    try {
+      await ensureWebLLM();
+
+      // If an engine already exists for a different model, unload it.
+      if (state.engine) {
+        try { await state.engine.unload(); } catch (_) {}
+        state.engine = null;
+      }
+
+      const engine = await webllm.CreateMLCEngine(modelId, {
+        initProgressCallback: (p) => {
+          const pct = Math.round((p.progress || 0) * 100);
+          progressEl.value = isFinite(pct) ? pct : 0;
+          setStatus("loading", p.text || `Loading… ${pct}%`);
+        },
+      });
+
+      state.engine = engine;
+      state.loadedModelId = modelId;
+      progressEl.style.display = "none";
+      setStatus("ready", "Ready. Share what's on your mind.");
+      input.disabled = false;
+      sendBtn.disabled = false;
+      input.focus();
+    } catch (err) {
+      console.error(err);
+      setStatus("error", "Couldn't load the model. Check your connection and try again.");
+      progressEl.style.display = "none";
+    } finally {
+      state.loading = false;
+    }
+  }
+
+  modelSelect.addEventListener("change", () => {
+    // Reset chat when swapping models to avoid confusing the new engine with old state
+    if (state.messages.length && !confirm("Switching models will clear this conversation. Continue?")) {
+      modelSelect.value = state.loadedModelId || MODELS[0].id;
+      return;
+    }
+    newChat();
+    loadModel(modelSelect.value);
+  });
+
+  // Kick off load on first interaction to avoid surprising big downloads on page open
+  let firstLoadTriggered = false;
+  function triggerFirstLoad() {
+    if (firstLoadTriggered) return;
+    firstLoadTriggered = true;
+    loadModel(modelSelect.value);
+  }
+  input.addEventListener("focus", triggerFirstLoad, { once: true });
+
+  setStatus("", "Click the chat box to start loading the model.");
+
+  // —————————————————————————————— Context modal
+  addCtxBtn.addEventListener("click", openCtxModal);
+  closeCtxBtn.addEventListener("click", closeCtxModal);
+  cancelCtxBtn.addEventListener("click", closeCtxModal);
+  ctxModal.addEventListener("click", (e) => { if (e.target === ctxModal) closeCtxModal(); });
+
+  function openCtxModal() {
+    ctxInput.value = state.contextText;
+    relLabelInput.value = state.relLabel;
+    ctxModal.classList.add("open");
+    setTimeout(() => ctxInput.focus(), 50);
+  }
+  function closeCtxModal() { ctxModal.classList.remove("open"); }
+
+  saveCtxBtn.addEventListener("click", () => {
+    state.contextText = ctxInput.value.trim();
+    state.relLabel = relLabelInput.value.trim();
+    updateCtxBox();
+    closeCtxModal();
+  });
+
+  clearCtxBtn.addEventListener("click", () => {
+    state.contextText = "";
+    state.relLabel = "";
+    updateCtxBox();
+  });
+
+  function updateCtxBox() {
+    if (!state.contextText) {
+      ctxBox.classList.add("empty");
+      ctxBox.textContent = "No conversation history added yet.";
+      return;
+    }
+    ctxBox.classList.remove("empty");
+    const chars = state.contextText.length;
+    const preview = state.contextText.slice(0, 400);
+    const who = state.relLabel ? `With: ${state.relLabel}\n` : "";
+    ctxBox.textContent = `${who}${preview}${state.contextText.length > 400 ? "…" : ""}\n\n(${chars.toLocaleString()} characters loaded)`;
+  }
+
+  // File drop
+  dropZone.addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
+  ["dragenter", "dragover"].forEach(ev => dropZone.addEventListener(ev, (e) => {
+    e.preventDefault(); dropZone.classList.add("drag");
+  }));
+  ["dragleave", "drop"].forEach(ev => dropZone.addEventListener(ev, (e) => {
+    e.preventDefault(); dropZone.classList.remove("drag");
+  }));
+  dropZone.addEventListener("drop", (e) => handleFiles(e.dataTransfer.files));
+
+  async function handleFiles(files) {
+    if (!files || !files.length) return;
+    const parts = [];
+    for (const f of files) {
+      const text = await f.text();
+      parts.push(`--- ${f.name} ---\n${text}`);
+    }
+    const combined = parts.join("\n\n");
+    ctxInput.value = ctxInput.value ? ctxInput.value + "\n\n" + combined : combined;
+  }
+
+  // —————————————————————————————— Chat rendering
+  function renderMessages() {
+    // Keep welcome visible when empty
+    chatInner.innerHTML = "";
+    if (state.messages.length === 0) {
+      chatInner.appendChild(welcome);
+      return;
+    }
+    for (const m of state.messages) {
+      chatInner.appendChild(renderMsg(m.role, m.content));
+    }
+  }
+  function renderMsg(role, content) {
+    const wrap = document.createElement("div");
+    wrap.className = `msg ${role === "user" ? "user" : "ai"}`;
+    const avatar = document.createElement("div");
+    avatar.className = "avatar";
+    avatar.textContent = role === "user" ? "You" : "H";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.innerHTML = markdownish(content);
+    wrap.appendChild(avatar);
+    wrap.appendChild(bubble);
+    return wrap;
+  }
+  function markdownish(text) {
+    // Minimal markdown: escape HTML, then bold/italic/code/list/blockquote/paragraphs
+    const esc = (s) => s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+    let t = esc(text);
+    // code spans
+    t = t.replace(/`([^`]+)`/g, "<code>$1</code>");
+    // bold / italic
+    t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+    t = t.replace(/(^|\W)\*([^*\n]+)\*/g, "$1<em>$2</em>");
+    t = t.replace(/(^|\W)_([^_\n]+)_/g, "$1<em>$2</em>");
+    // blockquotes
+    t = t.replace(/^> (.+)$/gm, "<blockquote>$1</blockquote>");
+    // lists (simple)
+    t = t.replace(/(?:^|\n)((?:[-*] .+\n?)+)/g, (m, list) => {
+      const items = list.trim().split(/\n/).map(li => li.replace(/^[-*] /, "").trim());
+      return "\n<ul>" + items.map(i => `<li>${i}</li>`).join("") + "</ul>\n";
+    });
+    t = t.replace(/(?:^|\n)((?:\d+\. .+\n?)+)/g, (m, list) => {
+      const items = list.trim().split(/\n/).map(li => li.replace(/^\d+\. /, "").trim());
+      return "\n<ol>" + items.map(i => `<li>${i}</li>`).join("") + "</ol>\n";
+    });
+    // paragraphs
+    t = t.split(/\n{2,}/).map(p => {
+      if (/^<(ul|ol|blockquote)/.test(p.trim())) return p;
+      return `<p>${p.replace(/\n/g, "<br>")}</p>`;
+    }).join("");
+    return t;
+  }
+
+  function scrollBottom() {
+    chat.scrollTop = chat.scrollHeight;
+  }
+
+  // —————————————————————————————— Sending
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(200, input.scrollHeight) + "px";
+  });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+  sendBtn.addEventListener("click", send);
+
+  starters.addEventListener("click", (e) => {
+    const s = e.target.closest(".starter");
+    if (!s) return;
+    input.value = s.dataset.prompt;
+    input.dispatchEvent(new Event("input"));
+    triggerFirstLoad();
+    input.focus();
+  });
+
+  newChatBtn.addEventListener("click", () => newChat());
+
+  function newChat() {
+    state.messages = [];
+    renderMessages();
+  }
+
+  function buildSystemMessage() {
+    let sys = SYSTEM_PROMPT;
+    if (state.contextText) {
+      const who = state.relLabel ? ` (with ${state.relLabel})` : "";
+      sys += `\n\n---\nThe user has provided the following conversation history${who}. Treat it as the ground truth of what was actually said. Analyze it concretely when relevant — tone, reciprocity, timing, patterns of connection and distance — rather than speaking in generalities.\n\n"""\n${state.contextText}\n"""`;
+    }
+    return { role: "system", content: sys };
+  }
+
+  async function send() {
+    if (state.generating) return;
+    const text = input.value.trim();
+    if (!text) return;
+    if (!state.engine) {
+      triggerFirstLoad();
+      setStatus("loading", "Model is still loading — give it a moment.");
+      return;
+    }
+
+    state.messages.push({ role: "user", content: text });
+    input.value = "";
+    input.style.height = "auto";
+    renderMessages();
+    scrollBottom();
+
+    // Placeholder assistant bubble with typing indicator
+    const asstIdx = state.messages.push({ role: "assistant", content: "" }) - 1;
+    const asstWrap = renderMsg("assistant", "");
+    const asstBubble = asstWrap.querySelector(".bubble");
+    asstBubble.innerHTML = `<span class="typing"><span></span><span></span><span></span></span>`;
+    chatInner.appendChild(asstWrap);
+    scrollBottom();
+
+    state.generating = true;
+    sendBtn.disabled = true;
+
+    try {
+      const msgs = [buildSystemMessage(), ...state.messages.slice(0, -1)]; // exclude empty assistant placeholder
+      const stream = await state.engine.chat.completions.create({
+        messages: msgs,
+        stream: true,
+        temperature: 0.7,
+        top_p: 0.95,
+        max_tokens: 1024,
+      });
+
+      let acc = "";
+      let firstChunk = true;
+      for await (const chunk of stream) {
+        const delta = chunk.choices?.[0]?.delta?.content || "";
+        if (!delta) continue;
+        if (firstChunk) { asstBubble.innerHTML = ""; firstChunk = false; }
+        acc += delta;
+        state.messages[asstIdx].content = acc;
+        asstBubble.innerHTML = markdownish(acc);
+        scrollBottom();
+      }
+      if (!acc) {
+        asstBubble.innerHTML = markdownish("I didn't catch that — could you try rephrasing?");
+      }
+    } catch (err) {
+      console.error(err);
+      asstBubble.innerHTML = markdownish(`*Something went wrong generating a response.* ${err?.message || ""}`);
+      asstBubble.style.color = "var(--error)";
+    } finally {
+      state.generating = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  // —————————————————————————————— Mobile menu
+  menuBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+  });
+
+  // —————————————————————————————— Init
+  renderMessages();
+  updateCtxBox();
+</script>
+</body>
+</html>
