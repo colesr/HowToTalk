@@ -3048,8 +3048,8 @@ What you bring to the council: the translation layer between different cognitive
       weight: (prior.length - (lastSpokeIdx[m.id] ?? -50)) + Math.random() * 6,
     }));
     weighted.sort((a, b) => b.weight - a.weight);
-    const r = Math.random();
-    const count = r < 0.5 ? 1 : (r < 0.85 ? 2 : 3);
+    // 1 speaker 65% of the time, 2 speakers 35%. Never 3+ — costs too much wall time.
+    const count = Math.random() < 0.65 ? 1 : 2;
     return weighted.slice(0, Math.min(count, weighted.length)).map(x => x.m);
   }
 
@@ -3328,55 +3328,52 @@ What you bring to the council: the translation layer between different cognitive
 
   function buildCouncilMessages(speaker, members, allMsgs, isComment, parentMsgId) {
     const others = members.filter(m => m.id !== speaker.id && m.active)
-      .map(m => `- ${m.name} (address them as "@${m.name.split(/\s+/)[0]}") — ${m.title}`)
-      .join("\n");
+      .map(m => `${m.name} (@${m.name.split(/\s+/)[0]}) — ${m.title}`)
+      .join("; ");
 
     let sys = `${speaker.prompt}
 
-You are in the user's AI Council Boardroom — a live group meeting where several expert voices talk with the user and with each other. Other members currently seated:
-${others || "(you are the only active member right now)"}
+You're in the user's AI Council Boardroom, a small group meeting. Other seated members: ${others || "(just you)"}.
 
-How to participate naturally:
-- Ask real questions — of the user, or of another member — when a question would be more useful than a statement. "What do you think is actually at stake for you here?" often beats a mini-lecture.
-- Share brief personal anecdotes from your expertise when they fit. One or two sentences. Relatable, not grandstanding.
-- React to what the user and other members just said. You can agree, gently challenge, build on it, or ask them to say more.
-- @mention another member by first name (e.g. "@Mira", "@Marcus") when you want them to weigh in on something specific. They will see it and respond.
-- If you have nothing useful to add right now, briefly say so and pass. "I'd rather hear from @Priya on this one" is completely fine.
-- Be a human in a room, not an encyclopedia. Sometimes warm, sometimes funny, sometimes quiet.
-- Keep your turn short and conversational — usually 2–4 sentences. A single good question is often enough.
-- No markdown lists, no headers, no bold. This is spoken conversation in text.
-- Don't speak for other members. Don't narrate the room. Don't describe what someone else is thinking or about to say.
-- Only say things YOU would say, from your own perspective. Never play someone else.
-- If the user has @mentioned you specifically, take that as an invitation to engage with what they asked.`;
+Rules:
+- Short turns, 2–4 sentences. Conversation, not essays. No markdown, no lists.
+- Ask a real question when useful. Anecdote welcome (1 line).
+- @mention another member by first name to pull them in. Pass freely if you have nothing new.
+- Don't speak for others, don't narrate, don't restate. Only your voice.`;
 
     if (state.contextText) {
-      const who = state.relLabel ? ` (with ${state.relLabel})` : "";
-      sys += `\n\nFor reference, the user has loaded this conversation history${who}:\n\n"""\n${state.contextText}\n"""`;
+      // Truncate loaded context for council turns to limit prefill cost
+      const ctx = state.contextText.length > 2000 ? state.contextText.slice(0, 2000) + "\n…(truncated)" : state.contextText;
+      sys += `\n\nLoaded conversation history for reference:\n"""\n${ctx}\n"""`;
     }
 
-    const transcript = allMsgs.map(m => {
-      const indent = m.parentId ? "    (comment) " : "";
+    // Only include the last ~10 messages of transcript to keep prefill tractable
+    const slice = allMsgs.slice(-10);
+    const transcript = slice.map(m => {
+      const indent = m.parentId ? "  ↳ " : "";
       if (m.role === "user") return `${indent}User: ${m.content}`;
       return `${indent}${m.name}: ${m.content}`;
-    }).join("\n\n");
+    }).join("\n");
 
     let userTurn;
     if (isComment) {
       const parent = allMsgs.find(m => m.id === parentMsgId);
       const parentLabel = parent?.role === "user" ? "the user" : (parent?.name || "someone");
-      userTurn = `Meeting transcript so far:
+      userTurn = `Recent turns:
 
 ${transcript}
 
-You're adding a short comment in response to something ${parentLabel} just said. 1–2 sentences is ideal. It could be a question, a brief agreement or gentle challenge, a small anecdote, or a quick @mention pulling someone else in. Don't start a new topic — comment on the specific thing they said.
+Add one short comment on what ${parentLabel} just said. 1–2 sentences. A question, a small agreement or pushback, or an @mention to pull someone in. Then stop.
 
-Now, as ${speaker.name}, what's your comment? Speak once, then stop.`;
+${speaker.name}:`;
     } else {
-      userTurn = `Meeting transcript so far:
+      userTurn = `Recent turns:
 
 ${transcript}
 
-Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A single good question is often better than a statement. You can @mention another member if you want them specifically to respond. Speak once, then stop.`;
+Speak once as ${speaker.name}, 2–4 sentences. Then stop.
+
+${speaker.name}:`;
     }
 
     return [
@@ -3454,7 +3451,7 @@ Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A 
 
       const isCommentFlow = !!replyTargetId;
       let turnsUsed = 0;
-      const maxTurns = 6;
+      const maxTurns = 3; // total LLM calls per user send — keeps wall time sane on 3B models
 
       for (const speaker of speakers) {
         if (state.council.stopRequested || turnsUsed >= maxTurns) break;
@@ -3462,18 +3459,9 @@ Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A 
         const speakerMsg = await runSpeakerTurn(speaker, turnParentId, isCommentFlow);
         turnsUsed++;
         if (state.council.stopRequested) break;
-        if (!isCommentFlow && speakerMsg) {
+        // Allow at most one follow-up comment, only if the speaker explicitly @mentioned someone
+        if (!isCommentFlow && speakerMsg && turnsUsed < maxTurns) {
           turnsUsed += await runFollowUps(speakerMsg, members, maxTurns - turnsUsed);
-        } else if (isCommentFlow && speakerMsg) {
-          const chainIds = (speakerMsg.mentions || []).filter(id => id !== speaker.id);
-          for (const cid of chainIds) {
-            if (state.council.stopRequested || turnsUsed >= maxTurns) break;
-            const chainMember = members.find(x => x.id === cid && x.active);
-            if (!chainMember) continue;
-            await runSpeakerTurn(chainMember, commentParentId, true);
-            turnsUsed++;
-            break;
-          }
         }
       }
     } finally {
@@ -3489,7 +3477,7 @@ Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A 
   }
 
   async function runSpeakerTurn(speaker, parentId, isComment) {
-    const delayMs = 250 + Math.floor(Math.random() * 700);
+    const delayMs = 120 + Math.floor(Math.random() * 280);
 
     const thinkEl = renderThinkingRow(speaker);
     if (parentId && isComment) {
@@ -3540,21 +3528,24 @@ Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A 
       const stream = await state.engine.chat.completions.create({
         messages,
         stream: true,
-        temperature: 0.82,
-        top_p: 0.95,
-        max_tokens: isComment ? 180 : 380,
+        temperature: 0.72,
+        top_p: 0.9,
+        max_tokens: isComment ? 150 : 260,
       });
       let acc = "";
       let firstChunk = true;
       for await (const chunk of stream) {
         if (state.council.stopRequested) break;
         const delta = chunk?.choices?.[0]?.delta?.content || "";
-        if (!delta) continue;
-        if (firstChunk && bubble) { bubble.innerHTML = ""; firstChunk = false; }
-        acc += delta;
-        msg.content = acc;
-        if (bubble) bubble.innerHTML = renderContent(acc, state.council.members);
-        scrollCouncilBottom();
+        const done = chunk?.choices?.[0]?.finish_reason;
+        if (delta) {
+          if (firstChunk && bubble) { bubble.innerHTML = ""; firstChunk = false; }
+          acc += delta;
+          msg.content = acc;
+          if (bubble) bubble.innerHTML = renderContent(acc, state.council.members);
+          scrollCouncilBottom();
+        }
+        if (done) break;
       }
       if (!acc) msg.content = "*(no response)*";
       const { mentionIds } = parseMentions(msg.content, state.council.members);
@@ -3574,25 +3565,12 @@ Now, as ${speaker.name}, what do you want to say? 2–4 sentences is typical. A 
     if (budget <= 0 || !parentMsg || parentMsg.role !== "member") return 0;
     const mentioned = (parentMsg.mentions || []).filter(id => id !== parentMsg.memberId);
     const activeOthers = members.filter(m => m.active && m.id !== parentMsg.memberId);
-    const mustRespond = activeOthers.filter(m => mentioned.includes(m.id));
-    const candidates = activeOthers.filter(m => !mustRespond.includes(m));
-
-    let turns = 0;
-    for (const m of mustRespond) {
-      if (state.council.stopRequested || turns >= budget) break;
-      const commentMsg = await runSpeakerTurn(m, parentMsg.id, true);
-      if (commentMsg) turns++;
-    }
-    const extraCap = Math.max(0, 2 - mustRespond.length);
-    let extras = 0;
-    for (const m of candidates) {
-      if (state.council.stopRequested || turns >= budget || extras >= extraCap) break;
-      if (Math.random() < 0.28) {
-        const cm = await runSpeakerTurn(m, parentMsg.id, true);
-        if (cm) { turns++; extras++; }
-      }
-    }
-    return turns;
+    // Only follow up if the speaker explicitly @mentioned someone — and only ONE such comment.
+    const first = activeOthers.find(m => mentioned.includes(m.id));
+    if (!first) return 0;
+    if (state.council.stopRequested) return 0;
+    const commentMsg = await runSpeakerTurn(first, parentMsg.id, true);
+    return commentMsg ? 1 : 0;
   }
 
   // Composer events
