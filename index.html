@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>How to Talk — Private AI coach for the conversations on your mind</title>
+<title>Communication Enhancement Suite — Private AI coach for the conversations on your mind</title>
 <meta name="description" content="A private, browser-only AI that helps you make sense of tricky conversations — decode tone, plan difficult talks, and stop overthinking that unread text." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -67,8 +67,9 @@
   .brand h1 {
     font-family: "Fraunces", Georgia, serif;
     font-weight: 600;
-    font-size: 22px;
-    letter-spacing: -0.01em;
+    font-size: 17px;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
     margin: 0;
   }
   .brand .dot {
@@ -440,6 +441,114 @@
   }
   .drop-zone:hover, .drop-zone.drag { border-color: var(--accent); background: rgba(107,138,122,0.05); color: var(--accent-deep); }
 
+  /* Toolkit */
+  .modal.toolkit { max-width: 820px; }
+  .toolkit-intro {
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin: 0 0 18px;
+  }
+  .toolkit-category { margin-bottom: 22px; }
+  .toolkit-category:last-child { margin-bottom: 4px; }
+  .toolkit-category h4 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--accent-deep);
+    margin: 0 0 10px;
+    letter-spacing: 0.005em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .toolkit-category h4::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+  .toolkit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 8px;
+  }
+  .tool-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: border-color 120ms, background 120ms, transform 80ms;
+    text-align: left;
+    font-family: inherit;
+    position: relative;
+  }
+  .tool-card:hover { border-color: var(--accent); background: #fff; }
+  .tool-card:active { transform: translateY(1px); }
+  .tool-card .t-label {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink);
+    margin-bottom: 3px;
+    display: block;
+  }
+  .tool-card.needs-ctx .t-label { padding-right: 92px; }
+  .tool-card .t-desc {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    display: block;
+  }
+  .tool-card.needs-ctx::after {
+    content: "needs thread";
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: 9.5px;
+    color: var(--warm);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: rgba(197,123,90,0.1);
+    padding: 2px 6px;
+    border-radius: 10px;
+  }
+  .tool-warning {
+    background: rgba(197,123,90,0.08);
+    border: 1px solid rgba(197,123,90,0.3);
+    color: #7a3e22;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .tool-warning b {
+    color: var(--warm);
+    cursor: pointer;
+    border-bottom: 1px dotted var(--warm);
+  }
+  .tool-field { margin-bottom: 4px; }
+  .tool-desc-top {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .welcome .toolkit-link {
+    display: inline-block;
+    margin-top: 22px;
+    font-size: 12.5px;
+    color: var(--accent-deep);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--accent);
+    cursor: pointer;
+    padding-bottom: 1px;
+  }
+  .welcome .toolkit-link:hover { color: var(--warm); border-bottom-color: var(--warm); }
+
   /* Typing indicator */
   .typing {
     display: inline-flex;
@@ -477,7 +586,7 @@
   <aside id="sidebar">
     <div class="brand">
       <span class="dot"></span>
-      <h1>How to Talk</h1>
+      <h1>Communication Enhancement Suite</h1>
     </div>
     <div class="tagline">A private space to think through the conversations on your mind.</div>
 
@@ -498,6 +607,13 @@
       <div id="ctxBox" class="ctx-box empty">No conversation history added yet.</div>
       <div class="btn-row" style="margin-top:8px;">
         <button class="btn" id="addCtxBtn">Add / paste conversation</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Toolkit</div>
+      <div class="btn-row">
+        <button class="btn" id="openToolkitBtn">Browse all tools</button>
       </div>
     </div>
 
@@ -547,6 +663,7 @@
               Paste a conversation and I'll analyze the dynamic.
             </div>
           </div>
+          <a class="toolkit-link" id="welcomeToolkitLink">Or browse the full toolkit — 19 structured tools →</a>
         </div>
       </div>
     </div>
@@ -588,13 +705,46 @@
   </div>
 </div>
 
+<!-- Toolkit modal -->
+<div class="modal-backdrop" id="toolkitModal">
+  <div class="modal toolkit">
+    <header>
+      <h3>Toolkit</h3>
+      <button class="btn ghost" id="closeToolkitBtn">Close</button>
+    </header>
+    <div class="body">
+      <p class="toolkit-intro">Pick a tool for a specific kind of conversation. Each one opens a short prompt tuned for that situation — edit before sending, or send as is.</p>
+      <div id="toolkitBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tool form modal -->
+<div class="modal-backdrop" id="toolFormModal">
+  <div class="modal">
+    <header>
+      <h3 id="toolFormTitle">Tool</h3>
+      <button class="btn ghost" id="closeToolFormBtn">Close</button>
+    </header>
+    <div class="body">
+      <p class="tool-desc-top" id="toolFormDesc"></p>
+      <div id="toolFormWarning"></div>
+      <div id="toolFormFields"></div>
+    </div>
+    <footer>
+      <button class="btn ghost" id="cancelToolFormBtn">Cancel</button>
+      <button class="btn primary" id="useToolBtn">Use this tool</button>
+    </footer>
+  </div>
+</div>
+
 <script type="module">
   // ————————————————————————————————————————————————
-  // How to Talk — single-file WebGPU chat app
+  // Communication Enhancement Suite — single-file WebGPU chat app
   // Uses @mlc-ai/web-llm for in-browser LLM inference.
   // ————————————————————————————————————————————————
 
-  const SYSTEM_PROMPT = `You are "How to Talk" — a warm, grounded AI coach for the everyday conversations that weigh on people. Your user is coming to you because they are overthinking, anxious, or unsure about an interaction with another human: a text that went unanswered, a comment that felt off, a meeting they're dreading, a relationship they want to take care of.
+  const SYSTEM_PROMPT = `You are a warm, grounded AI coach for the everyday conversations that weigh on people. Your user is coming to you because they are overthinking, anxious, or unsure about an interaction with another human: a text that went unanswered, a comment that felt off, a meeting they're dreading, a relationship they want to take care of.
 
 Your single purpose is to help them think more clearly and feel less alone, so they can show up in their relationships with confidence, respect, and genuine connection.
 
@@ -632,6 +782,348 @@ You are private — you run entirely in the user's browser. They can trust you w
     { id: "Hermes-3-Llama-3.2-3B-q4f16_1-MLC", label: "Hermes 3 (Llama 3.2 3B) (~2 GB)" },
     { id: "Qwen2.5-3B-Instruct-q4f16_1-MLC", label: "Qwen 2.5 3B (~2 GB)" },
     { id: "Llama-3.1-8B-Instruct-q4f32_1-MLC-1k", label: "Llama 3.1 8B (best, ~5 GB)" },
+  ];
+
+  // ————————————————————————————————————————————————
+  // Toolkit — 19 structured tools across 4 categories.
+  // Each tool: id, category, label, description, requiresContext, fields, prompt(values).
+  // ————————————————————————————————————————————————
+  const TOOLS = [
+    // ——— Analyze a thread ———
+    {
+      id: "reciprocity",
+      category: "Analyze a thread",
+      label: "Reciprocity audit",
+      description: "Is the effort balanced? Who initiates, who asks questions, who shows up.",
+      requiresContext: true,
+      fields: [
+        { name: "focus", label: "Anything specific you want me to look at?", type: "text", placeholder: "e.g. the last 3 months, or how they respond when I'm struggling", optional: true },
+      ],
+      prompt: (v) => `Please do a reciprocity audit on the conversation I've loaded in context.
+
+Look concretely at: who initiates, who reopens the thread after silence, who asks follow-up questions, who matches energy, and whether vulnerability is reciprocated.${v.focus ? `\n\nI'd especially like you to focus on: ${v.focus}` : ""}
+
+Give me the honest math, plus one generous read and one cautious read. Don't sugarcoat, but don't catastrophize either.`,
+    },
+    {
+      id: "manipulation",
+      category: "Analyze a thread",
+      label: "Manipulation / gaslighting check",
+      description: "Look for DARVO, gaslighting, and other manipulation patterns — with evidence.",
+      requiresContext: true,
+      fields: [
+        { name: "concern", label: "What's making you wonder?", type: "textarea", placeholder: "Describe what's felt off, or the specific moment that prompted this.", optional: false },
+      ],
+      prompt: (v) => `I'm wondering if what's happening here might be manipulation. Here's what's prompting the question:
+
+${v.concern}
+
+Using the conversation I've loaded in context, look carefully for patterns like DARVO (deny, attack, reverse victim and offender), gaslighting (reality-denial), moving goalposts, love bombing, stonewalling, or contempt. Quote specific lines as evidence when you find them.
+
+Be honest. If the evidence is there, name it. If it isn't — or if there's a more innocent read — tell me that too. I'd rather know the truth than have my fear confirmed.`,
+    },
+    {
+      id: "tone-drift",
+      category: "Analyze a thread",
+      label: "Tone drift over time",
+      description: "'We used to be warm.' Track how the dynamic has shifted.",
+      requiresContext: true,
+      fields: [
+        { name: "before", label: "What did it used to feel like?", type: "text", placeholder: "e.g. playful, close, easy", optional: true },
+        { name: "now", label: "What does it feel like now?", type: "text", placeholder: "e.g. transactional, distant, tense", optional: true },
+      ],
+      prompt: (v) => `Using the conversation I've loaded in context, help me trace how the tone between us has shifted over time.
+
+${v.before ? `It used to feel: ${v.before}\n` : ""}${v.now ? `It feels now: ${v.now}\n` : ""}
+Look at word choice, warmth markers, length of replies, who reaches out first, humor, pet names, emoji use — anything that tells a story memory alone can't. If you can identify roughly when something shifted, point to it. Quote specific moments.`,
+    },
+    {
+      id: "dating-pace",
+      category: "Analyze a thread",
+      label: "Early-dating pace read",
+      description: "Response latency, mirroring, reopening — the quiet signals.",
+      requiresContext: true,
+      fields: [
+        { name: "stage", label: "Where are you in the dating stage?", type: "text", placeholder: "e.g. matched a week ago, 3 dates in", optional: true },
+        { name: "question", label: "What do you want to know?", type: "text", placeholder: "e.g. are they interested? am I coming on too strong?", optional: true },
+      ],
+      prompt: (v) => `I'm in early dating with this person.${v.stage ? ` Context: ${v.stage}.` : ""} Using the conversation I've loaded, read the pace between us.
+
+Look at: response latency on both sides, who reopens the thread when it goes quiet, whether energy is being mirrored, depth of questions asked, and any change in rhythm.${v.question ? `\n\nSpecifically: ${v.question}` : ""}
+
+Give me the generous read, the cautious read, and what I'd look for over the next few exchanges to tell which is more likely.`,
+    },
+    {
+      id: "repair-check",
+      category: "Analyze a thread",
+      label: "Post-fight repair check",
+      description: "Did either of us make a real repair attempt, or are we just past it?",
+      requiresContext: true,
+      fields: [
+        { name: "fight", label: "What was the fight about, briefly?", type: "textarea", placeholder: "A sentence or two.", optional: false },
+      ],
+      prompt: (v) => `We had a fight. Here's the gist:
+
+${v.fight}
+
+Using the conversation I've loaded, tell me honestly: did either of us make a real repair attempt, or are we just moving on? Point to specific moments. A repair attempt can be subtle — a joke, a softening, a question about something unrelated — so look for the quiet ones too.
+
+If there wasn't one, what's a way I could open one now that'd be hard for them to reject?`,
+    },
+    {
+      id: "am-i-difficult",
+      category: "Analyze a thread",
+      label: "Am I the difficult one here?",
+      description: "The question most AIs won't answer honestly. With evidence, this one will.",
+      requiresContext: true,
+      fields: [
+        { name: "context", label: "What's the situation?", type: "textarea", placeholder: "What's been going on that made you ask this?", optional: false },
+      ],
+      prompt: (v) => `Be honest with me. Here's the situation:
+
+${v.context}
+
+Using the conversation I've loaded in context, tell me plainly: am I the one being difficult here? If yes, how, specifically? Quote moments. If no, what's actually going on? If it's mixed — which it usually is — give me the honest breakdown without softening.
+
+I can take it. I'd rather see myself clearly than be reassured.`,
+    },
+
+    // ——— Draft something hard ———
+    {
+      id: "hard-message",
+      category: "Draft something hard",
+      label: "The hard message",
+      description: "Resignation, boundary, coming out, difficult news — in 2–3 registers.",
+      requiresContext: false,
+      fields: [
+        { name: "situation", label: "What's the message about?", type: "textarea", placeholder: "What do you need to say, to whom, and why is it hard?", optional: false },
+        { name: "outcome", label: "What outcome would feel like success?", type: "text", placeholder: "e.g. they hear me, our relationship stays intact, I feel heard", optional: true },
+      ],
+      prompt: (v) => `I need to write something hard:
+
+${v.situation}
+${v.outcome ? `\nWhat would feel like success: ${v.outcome}\n` : ""}
+Please offer me 2–3 drafts in different registers — say, direct-and-warm, gentler-and-more-exploratory, and firm-and-minimal. For each, briefly note what it optimizes for and what it risks. Don't push me toward one; let me choose my voice.`,
+    },
+    {
+      id: "manage-up",
+      category: "Draft something hard",
+      label: "Manage up a difficult boss",
+      description: "Phrasing that holds ground without escalating.",
+      requiresContext: false,
+      fields: [
+        { name: "dynamic", label: "What's the dynamic?", type: "textarea", placeholder: "e.g. they micromanage, they're critical, they shift blame, they don't advocate for me", optional: false },
+        { name: "ask", label: "What do you need from this conversation?", type: "text", placeholder: "e.g. more autonomy, clearer expectations, to stop being interrupted", optional: false },
+      ],
+      prompt: (v) => `I need to have a conversation with my boss. Here's the dynamic:
+
+${v.dynamic}
+
+What I need from the conversation: ${v.ask}
+
+Help me think through: (1) how to open it so they don't get defensive, (2) a specific ask phrased as a request rather than a complaint, (3) what to do if they deflect or turn it around on me, and (4) how to keep my composure if it gets tense. Give me actual phrases I could use, not just principles.`,
+    },
+    {
+      id: "raise",
+      category: "Draft something hard",
+      label: "Ask for a raise or scope",
+      description: "Script, anticipated pushback, and responses to each.",
+      requiresContext: false,
+      fields: [
+        { name: "role", label: "Your role and tenure", type: "text", placeholder: "e.g. senior engineer, 2.5 years", optional: false },
+        { name: "ask", label: "What are you asking for?", type: "text", placeholder: "e.g. 15% raise, promotion to principal, new scope", optional: false },
+        { name: "rationale", label: "Why do you deserve it?", type: "textarea", placeholder: "Wins, increased scope, market data — anything concrete. Bullets are fine.", optional: false },
+      ],
+      prompt: (v) => `I'm asking for: ${v.ask}
+My role and tenure: ${v.role}
+My case:
+${v.rationale}
+
+Help me with: (1) a concise opening that frames this as a business conversation, not a personal favor, (2) the tight version of my case — what to lead with, what to drop, (3) the three most likely pieces of pushback I'll get and how to respond to each, and (4) what to do if they say "not right now" — including how to pin down specifics rather than leaving with a vague deferral.`,
+    },
+    {
+      id: "critical-feedback",
+      category: "Draft something hard",
+      label: "Give critical feedback",
+      description: "To a report, a peer, or a collaborator — without crushing them.",
+      requiresContext: false,
+      fields: [
+        { name: "who", label: "Who is this for?", type: "text", placeholder: "e.g. a direct report I like and don't want to discourage", optional: false },
+        { name: "issue", label: "What's the issue?", type: "textarea", placeholder: "Be specific and concrete. Behaviors, not traits.", optional: false },
+        { name: "stakes", label: "What's at stake if it doesn't change?", type: "text", placeholder: "e.g. their next promotion, team trust, a project deadline", optional: true },
+      ],
+      prompt: (v) => `I need to give critical feedback.
+
+Who it's for: ${v.who}
+The issue: ${v.issue}
+${v.stakes ? `What's at stake: ${v.stakes}\n` : ""}
+Help me deliver this using a clear behavior-impact-request structure — but in my own voice, not a formula. Give me: (1) a way to open it that signals care without softening the message, (2) the specific behavior plus specific impact, phrased so they can actually hear it, (3) a concrete request for what should change, and (4) how to handle it if they get defensive or upset in the moment.`,
+    },
+    {
+      id: "apology",
+      category: "Draft something hard",
+      label: "Apologize for real",
+      description: "Not 'sorry you felt that way.' A real repair.",
+      requiresContext: false,
+      fields: [
+        { name: "what", label: "What did you do?", type: "textarea", placeholder: "Be honest. What actually happened from their point of view?", optional: false },
+        { name: "impact", label: "What do you understand about the impact on them?", type: "textarea", placeholder: "What did it cost them? How did it land?", optional: false },
+        { name: "change", label: "What will you do differently?", type: "text", placeholder: "Something specific and keepable.", optional: true },
+      ],
+      prompt: (v) => `I want to apologize for real. Help me avoid the fake versions — "sorry you felt that way," the non-apology apology, making it about my own guilt.
+
+What I did: ${v.what}
+
+My understanding of the impact: ${v.impact}
+${v.change ? `What I'll do differently: ${v.change}\n` : ""}
+Draft a real apology that: (1) names what I did plainly, (2) shows I understand the impact without centering my own feelings, (3) doesn't demand forgiveness or a particular response, and (4) is short enough to be believable. If my understanding of the impact seems incomplete, tell me what I might still be missing.`,
+    },
+    {
+      id: "grief-response",
+      category: "Draft something hard",
+      label: "Respond to someone in grief",
+      description: "People freeze here. Concrete things that actually help.",
+      requiresContext: false,
+      fields: [
+        { name: "who", label: "Who is this for?", type: "text", placeholder: "e.g. a close friend whose dad just died", optional: false },
+        { name: "timing", label: "When did it happen?", type: "text", placeholder: "e.g. yesterday, two weeks ago, a year ago today", optional: true },
+        { name: "relationship", label: "What's your relationship like?", type: "text", placeholder: "e.g. we text daily, we haven't talked in a while, close but private", optional: true },
+      ],
+      prompt: (v) => `Someone I care about is grieving and I don't want to freeze or say the wrong thing.
+
+Who: ${v.who}
+${v.timing ? `When the loss happened: ${v.timing}\n` : ""}${v.relationship ? `Our relationship: ${v.relationship}\n` : ""}
+Help me with: (1) a short, real message I could send now — not "let me know if you need anything," something concrete, (2) 2–3 specific offers of help that don't put the labor of asking on them, (3) what to avoid saying even with good intentions, and (4) how to keep showing up in the weeks that follow, when most people will have stopped.`,
+    },
+    {
+      id: "rehearse",
+      category: "Draft something hard",
+      label: "Rehearse a high-stakes conversation",
+      description: "Run through likely paths before you walk in.",
+      requiresContext: false,
+      fields: [
+        { name: "conversation", label: "What's the conversation?", type: "textarea", placeholder: "Who, what about, what you want out of it.", optional: false },
+        { name: "fears", label: "What are you most afraid of?", type: "text", placeholder: "e.g. they'll cry, they'll get angry, I'll lose my words", optional: true },
+      ],
+      prompt: (v) => `I want to rehearse before this conversation:
+
+${v.conversation}
+${v.fears ? `\nWhat I'm most afraid of: ${v.fears}\n` : ""}
+Walk me through: (1) a strong opening line, (2) the 2–3 most likely ways they could respond and what I'd say to each, (3) where this could go sideways and how to steer it back, and (4) a grounded way to close, whether it goes well or badly. Let me know what I should sit with before I walk in.`,
+    },
+
+    // ——— Specific situations ———
+    {
+      id: "decode-subtext",
+      category: "Specific situations",
+      label: "Decode what they meant",
+      description: "The plausible reads of a message — without the social cost of asking.",
+      requiresContext: false,
+      fields: [
+        { name: "said", label: "What did they say?", type: "textarea", placeholder: "Exact wording helps. Include tone cues if you noticed any.", optional: false },
+        { name: "situation", label: "What's the context?", type: "text", placeholder: "e.g. after I asked a favor, at the end of a long silence", optional: true },
+      ],
+      prompt: (v) => `They said:
+
+"${v.said}"
+${v.situation ? `\nContext: ${v.situation}\n` : ""}
+Give me 3–4 plausible reads of what they meant, ranked by how likely each is given what I've told you. For each, note what in the literal message supports it, and what I'd look for to tell whether that read is right. Don't pick one for me — give me a cleaner lens to read the next thing they say.`,
+    },
+    {
+      id: "teen-conversation",
+      category: "Specific situations",
+      label: "Open a hard conversation with a teen",
+      description: "Grades, mental health, friends, substances — opening without shutting them down.",
+      requiresContext: false,
+      fields: [
+        { name: "topic", label: "What's the topic?", type: "text", placeholder: "e.g. their grades, a friend group I'm worried about, signs of depression", optional: false },
+        { name: "teen", label: "A bit about your teen", type: "textarea", placeholder: "Age, personality, how they typically respond to you.", optional: false },
+      ],
+      prompt: (v) => `I'm a parent trying to open a conversation with my teen.
+
+Topic: ${v.topic}
+About them: ${v.teen}
+
+Help me: (1) pick the right moment and setting — often the car, a walk, anything side-by-side is easier than face-to-face, (2) an opening that doesn't sound like a trap or a lecture, (3) what to do if they shut down or get defensive, and (4) what success actually looks like — which is often not resolution, just an opened door. Remind me what not to do, especially around asking questions I already know the answer to.`,
+    },
+    {
+      id: "estrangement",
+      category: "Specific situations",
+      label: "Reconnect after estrangement",
+      description: "After years of silence — when a message finally lands, or you want to send one.",
+      requiresContext: false,
+      fields: [
+        { name: "who", label: "Who is this person?", type: "text", placeholder: "e.g. my older sister, my dad, an old best friend", optional: false },
+        { name: "howLong", label: "How long has it been?", type: "text", placeholder: "e.g. 4 years, since college", optional: true },
+        { name: "cause", label: "What caused the distance?", type: "textarea", placeholder: "As much or as little as you want to share.", optional: false },
+        { name: "direction", label: "Are you reaching out, or did they?", type: "text", placeholder: "e.g. they just texted, I've been thinking about reaching out", optional: false },
+      ],
+      prompt: (v) => `I'm navigating a reconnection.
+
+Who: ${v.who}
+${v.howLong ? `How long: ${v.howLong}\n` : ""}What caused the distance: ${v.cause}
+Direction: ${v.direction}
+
+Help me think through: (1) what I actually want from this — reconciliation, a specific conversation, or just to stop avoiding it, (2) what tone fits the first message (not too heavy, not too casual), (3) what's likely unfinished between us that the first exchange can't possibly carry, and (4) how to protect myself from reopening an old wound if it turns out they're not in the same place I am.`,
+    },
+    {
+      id: "post-death",
+      category: "Specific situations",
+      label: "Words after a death",
+      description: "The email to family, a eulogy draft, or replying to a clumsy condolence.",
+      requiresContext: false,
+      fields: [
+        { name: "need", label: "What do you need to write?", type: "text", placeholder: "e.g. email to extended family, eulogy, a response to a tone-deaf condolence", optional: false },
+        { name: "about", label: "About the person who died", type: "textarea", placeholder: "Who they were, your relationship, anything that should land.", optional: false },
+      ],
+      prompt: (v) => `I need help with words around a death.
+
+What I need to write: ${v.need}
+About them: ${v.about}
+
+Write with care. Draft something real — specific details, no clichés ("they're in a better place," "everything happens for a reason"). If it's a eulogy or a public message, help me land one moment that makes them feel known rather than listed. If it's a response to someone who said something hurtful in their clumsy attempt to help, help me reply without blowing up a relationship I'll want later.`,
+    },
+    {
+      id: "caregiving-siblings",
+      category: "Specific situations",
+      label: "Caregiving sibling coordination",
+      description: "Unequal labor, old resentments, aging parents.",
+      requiresContext: false,
+      fields: [
+        { name: "parent", label: "Who are you caring for?", type: "text", placeholder: "e.g. my mom, 78, early dementia", optional: false },
+        { name: "involved", label: "Who else is involved?", type: "textarea", placeholder: "Siblings, partners, anyone else. Who does what now?", optional: false },
+        { name: "tension", label: "What's the tension?", type: "textarea", placeholder: "Be honest — old dynamics, unequal effort, money, decisions.", optional: false },
+      ],
+      prompt: (v) => `I'm navigating caregiving with siblings.
+
+Who we're caring for: ${v.parent}
+Who's involved: ${v.involved}
+The tension: ${v.tension}
+
+This kind of thing usually carries decades of unspoken dynamics. Help me: (1) separate the practical ask from the old resentment so the conversation can actually be about logistics, (2) a fair way to propose redistributing work without sounding like an accusation, (3) how to handle it if someone retreats to "I'm doing my best" or "you know I can't," and (4) what's worth insisting on versus what I should let go of to preserve the relationship for the long road ahead.`,
+    },
+
+    // ——— Before you send ———
+    {
+      id: "pre-send",
+      category: "Before you send",
+      label: "Pre-send gut check",
+      description: "Paste your draft. I'll flag likely misreads before you hit send.",
+      requiresContext: false,
+      fields: [
+        { name: "draft", label: "Your draft message", type: "textarea", placeholder: "Paste exactly what you're about to send.", optional: false },
+        { name: "recent", label: "The last few turns before it", type: "textarea", placeholder: "Paste the immediate context so I can read tone. Optional.", optional: true },
+        { name: "goal", label: "What are you hoping they hear?", type: "text", placeholder: "e.g. I'm hurt but not angry, I want to understand, I need a real answer", optional: true },
+      ],
+      prompt: (v) => `I want a pre-send gut check before I send this.
+
+My draft:
+"""
+${v.draft}
+"""
+${v.recent ? `\nThe last few turns before this:\n"""\n${v.recent}\n"""\n` : ""}${v.goal ? `\nWhat I'm hoping they hear: ${v.goal}\n` : ""}
+Read my draft carefully. Flag anything likely to be misread, land defensively, or sound passive-aggressive even if I didn't mean it that way. Tell me which single word or phrase would do the most work to change if I tweaked it. If the draft is fine as is, tell me that — don't invent problems.`,
+    },
   ];
 
   // State
@@ -678,7 +1170,7 @@ You are private — you run entirely in the user's browser. They can trust you w
     document.body.innerHTML = `
       <div class="unsupported">
         <h2>WebGPU isn't available here</h2>
-        <p>How to Talk runs entirely on your device using WebGPU, which this browser doesn't support (or has disabled).</p>
+        <p>Communication Enhancement Suite runs entirely on your device using WebGPU, which this browser doesn't support (or has disabled).</p>
         <p>Try the latest <b>Chrome</b>, <b>Edge</b>, or <b>Brave</b> on desktop. On Firefox you can enable it under <code>about:config</code> → <code>dom.webgpu.enabled</code>.</p>
       </div>`;
     throw new Error("WebGPU not available");
@@ -992,6 +1484,156 @@ You are private — you run entirely in the user's browser. They can trust you w
     }
   }
 
+  // —————————————————————————————— Toolkit
+  const toolkitModal = $("toolkitModal");
+  const toolkitBody = $("toolkitBody");
+  const toolFormModal = $("toolFormModal");
+  const toolFormTitle = $("toolFormTitle");
+  const toolFormDesc = $("toolFormDesc");
+  const toolFormWarning = $("toolFormWarning");
+  const toolFormFields = $("toolFormFields");
+  const useToolBtn = $("useToolBtn");
+
+  let currentTool = null;
+
+  function renderToolkit() {
+    toolkitBody.innerHTML = "";
+    const cats = [];
+    for (const t of TOOLS) if (!cats.includes(t.category)) cats.push(t.category);
+    for (const cat of cats) {
+      const section = document.createElement("div");
+      section.className = "toolkit-category";
+      const h = document.createElement("h4");
+      h.textContent = cat;
+      section.appendChild(h);
+      const grid = document.createElement("div");
+      grid.className = "toolkit-grid";
+      for (const tool of TOOLS.filter(t => t.category === cat)) {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "tool-card" + (tool.requiresContext ? " needs-ctx" : "");
+        const label = document.createElement("span");
+        label.className = "t-label";
+        label.textContent = tool.label;
+        const desc = document.createElement("span");
+        desc.className = "t-desc";
+        desc.textContent = tool.description;
+        card.appendChild(label);
+        card.appendChild(desc);
+        card.addEventListener("click", () => openToolForm(tool));
+        grid.appendChild(card);
+      }
+      section.appendChild(grid);
+      toolkitBody.appendChild(section);
+    }
+  }
+
+  function openToolkitModal() {
+    toolkitModal.classList.add("open");
+  }
+  function closeToolkitModal() {
+    toolkitModal.classList.remove("open");
+  }
+  function openToolForm(tool) {
+    currentTool = tool;
+    toolFormTitle.textContent = tool.label;
+    toolFormDesc.textContent = tool.description;
+    toolFormFields.innerHTML = "";
+    toolFormWarning.innerHTML = "";
+
+    const needsCtxButMissing = tool.requiresContext && !state.contextText;
+    if (needsCtxButMissing) {
+      const warn = document.createElement("div");
+      warn.className = "tool-warning";
+      warn.innerHTML = `This tool works by analyzing a conversation you've loaded. <b id="inlineAddCtx">Add a conversation first</b> and the analysis will be grounded in the actual messages.`;
+      toolFormWarning.appendChild(warn);
+      setTimeout(() => {
+        const link = document.getElementById("inlineAddCtx");
+        if (link) link.addEventListener("click", () => {
+          closeToolForm();
+          closeToolkitModal();
+          openCtxModal();
+        });
+      }, 0);
+    }
+
+    for (const f of tool.fields) {
+      const wrap = document.createElement("div");
+      wrap.className = "tool-field";
+      const lbl = document.createElement("label");
+      lbl.textContent = f.label + (f.optional ? "  (optional)" : "");
+      wrap.appendChild(lbl);
+      let el;
+      if (f.type === "textarea") {
+        el = document.createElement("textarea");
+        el.rows = 3;
+      } else {
+        el = document.createElement("input");
+        el.type = "text";
+      }
+      el.name = f.name;
+      el.placeholder = f.placeholder || "";
+      wrap.appendChild(el);
+      toolFormFields.appendChild(wrap);
+    }
+
+    useToolBtn.disabled = needsCtxButMissing;
+    useToolBtn.textContent = needsCtxButMissing ? "Add conversation to continue" : "Use this tool";
+
+    toolkitModal.classList.remove("open");
+    toolFormModal.classList.add("open");
+    setTimeout(() => {
+      const first = toolFormFields.querySelector("input, textarea");
+      if (first) first.focus();
+    }, 60);
+  }
+  function closeToolForm() {
+    toolFormModal.classList.remove("open");
+    currentTool = null;
+  }
+
+  useToolBtn.addEventListener("click", () => {
+    if (!currentTool) return;
+    if (currentTool.requiresContext && !state.contextText) return;
+    const values = {};
+    let missingRequired = null;
+    for (const f of currentTool.fields) {
+      const el = toolFormFields.querySelector(`[name="${f.name}"]`);
+      const v = (el?.value || "").trim();
+      if (!v && !f.optional && !missingRequired) missingRequired = el;
+      values[f.name] = v;
+    }
+    if (missingRequired) {
+      missingRequired.focus();
+      missingRequired.style.borderColor = "var(--warm)";
+      setTimeout(() => { missingRequired.style.borderColor = ""; }, 1600);
+      return;
+    }
+    const prompt = currentTool.prompt(values);
+    input.value = prompt;
+    input.dispatchEvent(new Event("input"));
+    closeToolForm();
+    triggerFirstLoad();
+    input.focus();
+    scrollBottom();
+  });
+
+  $("openToolkitBtn").addEventListener("click", openToolkitModal);
+  $("closeToolkitBtn").addEventListener("click", closeToolkitModal);
+  $("closeToolFormBtn").addEventListener("click", closeToolForm);
+  $("cancelToolFormBtn").addEventListener("click", closeToolForm);
+  toolkitModal.addEventListener("click", (e) => { if (e.target === toolkitModal) closeToolkitModal(); });
+  toolFormModal.addEventListener("click", (e) => { if (e.target === toolFormModal) closeToolForm(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (toolFormModal.classList.contains("open")) closeToolForm();
+    else if (toolkitModal.classList.contains("open")) closeToolkitModal();
+    else if (ctxModal.classList.contains("open")) closeCtxModal();
+  });
+
+  const welcomeToolkitLink = $("welcomeToolkitLink");
+  if (welcomeToolkitLink) welcomeToolkitLink.addEventListener("click", openToolkitModal);
+
   // —————————————————————————————— Mobile menu
   menuBtn.addEventListener("click", () => {
     sidebar.classList.toggle("open");
@@ -1000,6 +1642,7 @@ You are private — you run entirely in the user's browser. They can trust you w
   // —————————————————————————————— Init
   renderMessages();
   updateCtxBox();
+  renderToolkit();
 </script>
 </body>
 </html>
