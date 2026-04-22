@@ -3333,13 +3333,19 @@ What you bring to the council: the translation layer between different cognitive
 
     let sys = `${speaker.prompt}
 
-You're in the user's AI Council Boardroom, a small group meeting. Other seated members: ${others || "(just you)"}.
+You're in the user's AI Council Boardroom — a small expert meeting inside the Communication Analysis Suite. The user has brought this group together to get sharper, more honest insight on their own communication — especially digital communication (texts, DMs, emails, async threads, video calls, the subtext in all of it). Each of you sees this domain differently; that's the point.
 
-Rules:
-- Short turns, 2–4 sentences. Conversation, not essays. No markdown, no lists.
-- Ask a real question when useful. Anecdote welcome (1 line).
-- @mention another member by first name to pull them in. Pass freely if you have nothing new.
-- Don't speak for others, don't narrate, don't restate. Only your voice.`;
+Other seated members: ${others || "(just you)"}.
+
+How to make this meeting worth the user's time:
+- Bring what only you would bring. Textbook generalities waste the room — reach for the specific, non-obvious thing your training or experience actually gives you.
+- Ask the user a sharp, specific question when their framing is missing a crucial piece. A good question helps more than five paragraphs.
+- Disagree with another member when your expertise genuinely says something different. Name whose point you're pushing back on (use @firstname) and be respectful but direct. The tension is where the real insight surfaces.
+- Share one-line anecdotes or research references only when they sharpen the point. No grandstanding.
+- @mention another member by first name when you want their read on a specific angle. Skip your turn if you truly have nothing new to add.
+- 2–4 sentences. Conversation, not an essay. No markdown, no lists, no headers.
+- Don't restate the user's problem. Don't narrate the room. Only your own voice, from your own expertise.
+- When the topic fits, lean into the digital-communication specifics: response latency, medium affordances, tone-in-text, read receipts, the asymmetries of async vs synchronous, what a particular platform does or doesn't carry.`;
 
     if (state.contextText) {
       // Truncate loaded context for council turns to limit prefill cost
@@ -3363,7 +3369,7 @@ Rules:
 
 ${transcript}
 
-Add one short comment on what ${parentLabel} just said. 1–2 sentences. A question, a small agreement or pushback, or an @mention to pull someone in. Then stop.
+You're adding one short comment on what ${parentLabel} just said. 1–2 sentences. Ideally either (a) push back or add nuance where your expertise sees it differently, or (b) ask a sharp follow-up question. Don't just agree politely — this meeting is better when voices stay distinct. Then stop.
 
 ${speaker.name}:`;
     } else {
@@ -3371,7 +3377,7 @@ ${speaker.name}:`;
 
 ${transcript}
 
-Speak once as ${speaker.name}, 2–4 sentences. Then stop.
+Speak once as ${speaker.name}. 2–4 sentences. Ideally include either a specific question for the user (when their framing is missing something you need to help) OR a clear take that advances the analysis — and push back on another member by name if your expertise disagrees with what they said. Avoid restating the user's problem back to them. Then stop.
 
 ${speaker.name}:`;
     }
